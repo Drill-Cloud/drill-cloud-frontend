@@ -1,0 +1,22 @@
+:root {
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  color: #f8fafc;
+  background: #0a0d12;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --bg: #0a0d12;
+  --panel: rgba(17, 24, 39, 0.88);
+  --panel-strong: rgba(10, 13, 18, 0.94);
+  --line: rgba(212, 165, 116, 0.22);
+  --line-strong: rgba(232, 201, 160, 0.48);
+  --accent: #c97a3d;
+  --accent-soft: #d4a574;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 8px;
+}

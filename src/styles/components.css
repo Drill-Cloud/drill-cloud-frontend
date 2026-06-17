@@ -424,13 +424,27 @@
 
 .metric-card__tag {
   min-width: 0;
-  overflow: hidden;
   color: #e5e7eb;
   font-size: 0.86rem;
   font-weight: 750;
   letter-spacing: 0.025em;
+}
+
+.metric-card__tag span,
+.metric-card__tag small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.metric-card__tag small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .metric-card__state {

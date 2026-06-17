@@ -67,6 +67,21 @@ export type HistoryResponse = {
   valueMode?: 'raw' | 'avg' | 'last' | 'first' | 'min' | 'max';
 };
 
+export type TagTranslationItem = {
+  edge: string;
+  tag: string;
+  locale: string;
+  displayName: string;
+  source: string | null;
+  updatedAt: string;
+};
+
+export type TagTranslationResponse = {
+  edge: string;
+  locale: string;
+  items: TagTranslationItem[];
+};
+
 /** Выполняет типизированный GET-запрос к cloud-v2 и централизованно обрабатывает ошибки HTTP. */
 async function request<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T> {
   const url = new URL(path, API_URL);
@@ -131,5 +146,18 @@ export function getHistory(params: {
     to: params.to,
     targetPoints: params.targetPoints,
     valueMode: params.valueMode,
+  });
+}
+
+/** Загружает русскоязычный справочник названий тегов для выбранного edge. */
+export function getTagTranslations(params: {
+  edge: string;
+  locale?: string;
+  tags?: string[];
+}): Promise<TagTranslationResponse> {
+  return request<TagTranslationResponse>('/tag-translations', {
+    edge: params.edge,
+    locale: params.locale ?? 'ru',
+    tags: params.tags?.join(','),
   });
 }

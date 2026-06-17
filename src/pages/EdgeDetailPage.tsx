@@ -16,7 +16,15 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CurrentEvent, CurrentItem, CurrentResponse, getCurrent, getCurrentEventsUrl, getHistory } from '../api/cloud';
+import {
+  CurrentEvent,
+  CurrentItem,
+  CurrentResponse,
+  getCurrent,
+  getCurrentEventsUrl,
+  getHistory,
+  getTagTranslations,
+} from '../api/cloud';
 import { useAuth } from '../auth/authContext';
 import { HistoryChart } from '../components/HistoryChart';
 import { MetricCard } from '../components/MetricCard';
@@ -73,6 +81,13 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     refetchInterval: currentEventsConnected ? false : 1_000,
   });
 
+  const tagTranslations = useQuery({
+    queryKey: ['tag-translations', edgeId, 'ru'],
+    queryFn: () => getTagTranslations({ edge: edgeId, locale: 'ru' }),
+    enabled: Boolean(edgeId),
+    staleTime: 10 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (!edgeId || typeof EventSource === 'undefined') {
       setCurrentEventsConnected(false);
@@ -103,11 +118,20 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     };
   }, [edgeId, queryClient]);
 
+  const tagLabels = useMemo(() => {
+    return Object.fromEntries((tagTranslations.data?.items ?? []).map((item) => [item.tag, item.displayName]));
+  }, [tagTranslations.data?.items]);
+
+  const getTagLabel = (tag: string) => tagLabels[tag] ?? tag;
+
   const visibleItems = useMemo(() => {
     const query = search.trim().toLowerCase();
     const items = current.data?.items ?? [];
-    return query ? items.filter((item) => item.tag.toLowerCase().includes(query)) : items;
-  }, [current.data?.items, search]);
+
+    return query
+      ? items.filter((item) => `${item.tag} ${tagLabels[item.tag] ?? ''}`.toLowerCase().includes(query))
+      : items;
+  }, [current.data?.items, search, tagLabels]);
 
   const latestUpdatedAt = useMemo(() => {
     const latest = (current.data?.items ?? []).reduce<number | null>((max, item) => {
@@ -272,6 +296,8 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
             onSelectVisibleTags={selectVisibleTags}
             onClearVisibleTags={clearVisibleTags}
             onClearTags={() => setSelectedTags([])}
+            getTagLabel={getTagLabel}
+            tagLabels={tagLabels}
           />
         ) : null}
 
@@ -282,6 +308,7 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
             isError={current.isError}
             error={current.error}
             selectedTags={selectedTags}
+            getTagLabel={getTagLabel}
             onSearchChange={setSearch}
             onToggleTag={toggleTag}
           />
@@ -381,6 +408,8 @@ function ArchiveView({
   onSelectVisibleTags,
   onClearVisibleTags,
   onClearTags,
+  getTagLabel,
+  tagLabels,
 }: {
   items: Array<{ tag: string; value: number; time: string }>;
   search: string;
@@ -399,6 +428,8 @@ function ArchiveView({
   onSelectVisibleTags: () => void;
   onClearVisibleTags: () => void;
   onClearTags: () => void;
+  getTagLabel: (tag: string) => string;
+  tagLabels: Record<string, string>;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const selectedPreview = selectedTags.slice(0, 10);
@@ -459,7 +490,7 @@ function ArchiveView({
             </div>
 
             <div className="selected-tags">
-              {selectedPreview.length ? selectedPreview.map((tag) => <span key={tag}>{tag}</span>) : <span>Не выбрано</span>}
+              {selectedPreview.length ? selectedPreview.map((tag) => <span key={tag}>{getTagLabel(tag)}</span>) : <span>Не выбрано</span>}
               {hiddenSelectedCount > 0 ? <span>+{hiddenSelectedCount}</span> : null}
             </div>
 
@@ -471,9 +502,13 @@ function ArchiveView({
                     key={item.tag}
                     type="button"
                     className={`tag-select-item ${selected ? 'tag-select-item--selected' : ''}`}
+                    title={item.tag}
                     onClick={() => onToggleTag(item.tag)}
                   >
-                    <span>{item.tag}</span>
+                    <span className="tag-select-item__name">
+                      <span>{getTagLabel(item.tag)}</span>
+                      {getTagLabel(item.tag) !== item.tag ? <small>{item.tag}</small> : null}
+                    </span>
                     <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: 3 })}</strong>
                   </button>
                 );
@@ -525,6 +560,7 @@ function ArchiveView({
             loading={historyLoading}
             from={toIsoFromInput(range.from)}
             to={toIsoFromInput(range.to)}
+            tagLabels={tagLabels}
           />
         ) : (
           <div className="chart-placeholder">Разверните список показателей и выберите серии для графика</div>
@@ -566,6 +602,7 @@ function IndicatorsView({
   isError,
   error,
   selectedTags,
+  getTagLabel,
   onSearchChange,
   onToggleTag,
 }: {
@@ -574,6 +611,7 @@ function IndicatorsView({
   isError: boolean;
   error: unknown;
   selectedTags: string[];
+  getTagLabel: (tag: string) => string;
   onSearchChange: (value: string) => void;
   onToggleTag: (tag: string) => void;
 }) {
@@ -656,11 +694,11 @@ function IndicatorsView({
               key={`${item.edge}:${item.tag}`}
               type="button"
               className={`metric-tile metric-tile--${statusInfo.status} ${selectedTags.includes(item.tag) ? 'metric-tile--selected' : ''}`}
-              title={`${item.tag}: ${formatNumber(item.value)} · ${statusInfo.label}`}
+              title={`${getTagLabel(item.tag)} (${item.tag}): ${formatNumber(item.value)} · ${statusInfo.label}`}
               onClick={() => onToggleTag(item.tag)}
             >
               <span className="metric-tile__status" />
-              <span className="metric-tile__tag">{item.tag}</span>
+              <span className="metric-tile__tag">{getTagLabel(item.tag)}</span>
               <strong>{formatNumber(item.value)}</strong>
             </button>
           ))}
@@ -671,6 +709,7 @@ function IndicatorsView({
             <MetricCard
               key={`${item.edge}:${item.tag}`}
               item={item}
+              displayName={getTagLabel(item.tag)}
               statusInfo={statusInfo}
               selected={selectedTags.includes(item.tag)}
               onToggle={onToggleTag}

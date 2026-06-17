@@ -28,6 +28,7 @@ type HistoryChartProps = {
   loading: boolean;
   from?: string;
   to?: string;
+  tagLabels?: Record<string, string>;
 };
 
 /** Подбирает подпись оси времени под текущий масштаб графика. */
@@ -46,7 +47,7 @@ function formatAxisDate(value: number, spanMs?: number): string {
 }
 
 /** Рисует исторические ряды показателей через ECharts с динамической временной шкалой. */
-export function HistoryChart({ data, loading, from, to }: HistoryChartProps) {
+export function HistoryChart({ data, loading, from, to, tagLabels = {} }: HistoryChartProps) {
   const xMin = from ? new Date(from).getTime() : undefined;
   const xMax = to ? new Date(to).getTime() : undefined;
   const xSpan = Number.isFinite(xMin) && Number.isFinite(xMax) ? Number(xMax) - Number(xMin) : undefined;
@@ -115,7 +116,7 @@ export function HistoryChart({ data, loading, from, to }: HistoryChartProps) {
     ],
     series:
       data?.series.map((series, index) => ({
-        name: series.tag,
+        name: tagLabels[series.tag] ?? series.tag,
         type: 'line',
         showSymbol: false,
         smooth: false,

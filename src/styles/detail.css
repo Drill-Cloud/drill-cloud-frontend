@@ -343,11 +343,27 @@
   text-align: left;
 }
 
-.tag-select-item span {
+.tag-select-item__name {
+  min-width: 0;
+}
+
+.tag-select-item__name span,
+.tag-select-item__name small {
+  display: block;
+  min-width: 0;
   overflow: hidden;
-  font-size: 0.78rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tag-select-item__name span {
+  font-size: 0.78rem;
+}
+
+.tag-select-item__name small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
 }
 
 .tag-select-item strong {

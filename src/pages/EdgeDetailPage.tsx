@@ -157,7 +157,7 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
         targetPoints: 1600,
       }),
     enabled: Boolean(edgeId && selectedTags.length),
-    refetchInterval: 5_000,
+    refetchInterval: false,
   });
 
   /** Переключает выбранный тег для отображения на историческом графике. */
@@ -556,6 +556,7 @@ function ArchiveView({
 
         {selectedTags.length ? (
           <HistoryChart
+            key={`${range.from}:${range.to}:${selectedTags.join(',')}`}
             data={history}
             loading={historyLoading}
             from={toIsoFromInput(range.from)}

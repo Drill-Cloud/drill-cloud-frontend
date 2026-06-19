@@ -9,6 +9,7 @@ import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import ReactEChartsCore from 'echarts-for-react/esm/core.js';
 import type { EChartsOption, SeriesOption } from 'echarts';
+import { useMemo, useRef } from 'react';
 import type { HistoryResponse } from '../api/cloud';
 
 echarts.use([
@@ -46,6 +47,17 @@ type TooltipParam = {
   marker?: string;
   seriesName?: string;
   value?: unknown;
+};
+
+type DataZoomState = {
+  start?: number;
+  end?: number;
+  startValue?: number;
+  endValue?: number;
+};
+
+type DataZoomEventBatch = DataZoomState & {
+  batch?: DataZoomState[];
 };
 
 /** Подбирает подпись оси времени под текущий масштаб графика. */
@@ -206,12 +218,17 @@ function createSeriesOptions(
 
 /** Рисует исторические ряды: avg соединяется линией, min/max показываются точками и вертикальным диапазоном. */
 export function HistoryChart({ data, loading, from, to, tagLabels = {} }: HistoryChartProps) {
+  const dataZoomRef = useRef<DataZoomState | null>(null);
   const xMin = from ? new Date(from).getTime() : undefined;
   const xMax = to ? new Date(to).getTime() : undefined;
   const xSpan = Number.isFinite(xMin) && Number.isFinite(xMax) ? Number(xMax) - Number(xMin) : undefined;
-  const legendData = data?.series.map((series) => tagLabels[series.tag] ?? series.tag) ?? [];
+  const legendData = useMemo(
+    () => data?.series.map((series) => tagLabels[series.tag] ?? series.tag) ?? [],
+    [data?.series, tagLabels],
+  );
+  const dataZoomState = dataZoomRef.current ?? {};
 
-  const option: EChartsOption = {
+  const option: EChartsOption = useMemo(() => ({
     color: SERIES_COLORS,
     animation: false,
     backgroundColor: 'transparent',
@@ -260,6 +277,10 @@ export function HistoryChart({ data, loading, from, to, tagLabels = {} }: Histor
       {
         type: 'inside',
         throttle: 80,
+        start: dataZoomState.start,
+        end: dataZoomState.end,
+        startValue: dataZoomState.startValue,
+        endValue: dataZoomState.endValue,
       },
       {
         type: 'slider',
@@ -272,13 +293,32 @@ export function HistoryChart({ data, loading, from, to, tagLabels = {} }: Histor
           borderColor: '#e8c9a0',
         },
         textStyle: { color: '#94a3b8' },
+        start: dataZoomState.start,
+        end: dataZoomState.end,
+        startValue: dataZoomState.startValue,
+        endValue: dataZoomState.endValue,
       },
     ],
     series:
       data?.series.flatMap((series, index) =>
         createSeriesOptions(series, index, tagLabels[series.tag] ?? series.tag),
       ) ?? [],
-  };
+  }), [data?.series, dataZoomState.end, dataZoomState.endValue, dataZoomState.start, dataZoomState.startValue, legendData, tagLabels, xMax, xMin, xSpan]);
+
+  const onChartEvents = useMemo(
+    () => ({
+      datazoom: (event: DataZoomEventBatch) => {
+        const state = event.batch?.[0] ?? event;
+        dataZoomRef.current = {
+          start: state.start,
+          end: state.end,
+          startValue: state.startValue,
+          endValue: state.endValue,
+        };
+      },
+    }),
+    [],
+  );
 
   if (loading) {
     return <div className="chart-placeholder">Загрузка графика...</div>;
@@ -288,5 +328,5 @@ export function HistoryChart({ data, loading, from, to, tagLabels = {} }: Histor
     return <div className="chart-placeholder">Нет данных для выбранного диапазона</div>;
   }
 
-  return <ReactEChartsCore echarts={echarts} option={option} className="history-chart" notMerge lazyUpdate />;
+  return <ReactEChartsCore echarts={echarts} option={option} className="history-chart" onEvents={onChartEvents} lazyUpdate />;
 }

@@ -7,7 +7,7 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG VITE_CLOUD_API_URL=http://localhost:3100
+ARG VITE_CLOUD_API_URL=http://localhost:3101
 ARG VITE_DEFAULT_EDGE=edge5
 ENV VITE_CLOUD_API_URL=$VITE_CLOUD_API_URL
 ENV VITE_DEFAULT_EDGE=$VITE_DEFAULT_EDGE

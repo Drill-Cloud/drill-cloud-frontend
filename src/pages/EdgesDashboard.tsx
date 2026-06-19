@@ -33,7 +33,7 @@ function getEdgeTitle(edge: EdgeItem): string {
   return edge.id;
 }
 
-/** Отображает стартовый dashboard со списком edge-установок и общей статистикой. */
+/** Отображает стартовый dashboard со списком edge-установок и общей статистикой cloud-v3. */
 export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardProps) {
   const [search, setSearch] = useState('');
   const auth = useAuth();
@@ -54,19 +54,26 @@ export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardPr
     return items.filter((edge) => `${edge.id} ${edge.name}`.toLowerCase().includes(query));
   }, [edges.data?.items, search]);
 
-  const stats = {
-    total: edges.data?.items.length ?? 0,
-    normal: 0,
-    emergency: 0,
-    equipmentProblem: 0,
-    maintenanceRequired: 0,
-  };
+  const stats = useMemo(() => {
+    const items = edges.data?.items ?? [];
+    const normal = items.filter((edge) => getEdgeState(edge) === 'ok').length;
+    const stale = items.filter((edge) => getEdgeState(edge) === 'warn').length;
+    const empty = items.filter((edge) => getEdgeState(edge) === 'empty').length;
+
+    return {
+      total: items.length,
+      normal,
+      stale,
+      empty,
+      liveTags: items.reduce((sum, edge) => sum + edge.liveTagCount, 0),
+    };
+  }, [edges.data?.items]);
 
   return (
     <main className="dashboard-shell">
       <header className="dashboard-header">
         <div>
-          <span className="page-kicker">Drill Cloud</span>
+          <span className="page-kicker">Drill Cloud v3</span>
           <h1>Буровые установки</h1>
         </div>
         <div className="dashboard-actions">
@@ -80,7 +87,7 @@ export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardPr
           {auth.enabled ? (
             <button type="button" className="ghost-button" onClick={() => void auth.logout()}>
               <LogOut size={17} />
-              Разлогиниться
+              Выйти
             </button>
           ) : null}
         </div>
@@ -89,9 +96,9 @@ export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardPr
       <section className="dashboard-stats" aria-label="Статистика буровых">
         <StatBlock label="Всего установок" value={stats.total} tone="neutral" />
         <StatBlock label="В норме" value={stats.normal} tone="success" />
-        <StatBlock label="Авария" value={stats.emergency} tone="danger" />
-        <StatBlock label="Проблема оборудования" value={stats.equipmentProblem} tone="warning" />
-        <StatBlock label="Требуется ТО" value={stats.maintenanceRequired} tone="accent" />
+        <StatBlock label="Нет live" value={stats.stale} tone="warning" />
+        <StatBlock label="Нет данных" value={stats.empty} tone="danger" />
+        <StatBlock label="Live тегов" value={stats.liveTags} tone="accent" />
       </section>
 
       {edges.isError ? (
@@ -99,13 +106,19 @@ export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardPr
       ) : (
         <section className="edge-card-grid" aria-label="Буровые установки">
           {filteredEdges.map((edge, index) => (
-            <EdgeCard key={edge.id} edge={edge} index={index} onOpenEdge={onOpenEdge} onOpenEquipment={onOpenEquipment} />
+            <EdgeCard
+              key={edge.id}
+              edge={edge}
+              index={index}
+              onOpenEdge={onOpenEdge}
+              onOpenEquipment={onOpenEquipment}
+            />
           ))}
         </section>
       )}
 
       {!edges.isPending && !filteredEdges.length && !edges.isError ? (
-        <div className="empty-panel">В cloud-v2 пока нет буровых</div>
+        <div className="empty-panel">В cloud-v3 пока нет буровых</div>
       ) : null}
     </main>
   );
@@ -129,7 +142,7 @@ function StatBlock({
   );
 }
 
-/** Рендерит продуктовую карточку edge с быстрыми переходами в рабочие разделы. */
+/** Рендерит карточку edge с быстрыми переходами в рабочие разделы. */
 function EdgeCard({
   edge,
   onOpenEdge,
@@ -174,7 +187,7 @@ function EdgeCard({
             <Clock3 size={14} />
             Последние данные
           </dt>
-          <dd>{edge.lastDataAt ? formatDateTime(edge.lastDataAt) : '—'}</dd>
+          <dd>{edge.lastDataAt ? formatDateTime(edge.lastDataAt) : '-'}</dd>
         </div>
       </dl>
 
@@ -187,6 +200,11 @@ function EdgeCard({
           <Gauge size={15} />
           Состояние байпасов
         </button>
+        {/* Электросхемы временно скрыты до готовности опубликованных схем и diagram-service. */}
+        {/* <button type="button" onClick={() => onOpenElectrical(edge.id)}>
+          <CircuitBoard size={15} />
+          Электросхемы
+        </button> */}
         <button type="button">
           <ShieldAlert size={15} />
           Аварии приводов

@@ -16,15 +16,8 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  CurrentEvent,
-  CurrentItem,
-  CurrentResponse,
-  getCurrent,
-  getCurrentEventsUrl,
-  getHistory,
-  getTagTranslations,
-} from '../api/cloud';
+import type { CurrentEvent, CurrentItem, CurrentResponse, HistoryResponse } from '../api/cloud';
+import { getCurrent, getCurrentEventsUrl, getHistory } from '../api/cloud';
 import { useAuth } from '../auth/authContext';
 import { HistoryChart } from '../components/HistoryChart';
 import { MetricCard } from '../components/MetricCard';
@@ -49,8 +42,13 @@ type EdgeDetailPageProps = {
   view: DetailView;
 };
 
+type DateRangeState = {
+  from: string;
+  to: string;
+};
+
 /** Создает диапазон истории от текущего времени на заданное количество часов назад. */
-function createRange(hours: number) {
+function createRange(hours: number): DateRangeState {
   const to = new Date();
   const from = new Date(to.getTime() - hours * 60 * 60 * 1000);
   return {
@@ -59,7 +57,12 @@ function createRange(hours: number) {
   };
 }
 
-/** Собирает общий layout edge-раздела: меню, live-данные, архив, показатели и iframe оборудования. */
+/** Возвращает русское имя тега из tag.name, если оно пришло из cloud-v3. */
+function getItemLabel(item: CurrentItem): string {
+  return item.name?.trim() || item.tag;
+}
+
+/** Собирает общий layout edge-раздела: меню, текущие данные, архив, показатели и iframe оборудования. */
 export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -70,7 +73,6 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
   const [search, setSearch] = useState('');
   const [range, setRange] = useState(() => createRange(24));
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [valueMode, setValueMode] = useState<'avg' | 'last' | 'min' | 'max'>('avg');
 
   const edgePath = `/edges/${encodeURIComponent(edgeId)}`;
 
@@ -79,13 +81,6 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     queryFn: () => getCurrent(edgeId),
     enabled: Boolean(edgeId),
     refetchInterval: currentEventsConnected ? false : 1_000,
-  });
-
-  const tagTranslations = useQuery({
-    queryKey: ['tag-translations', edgeId, 'ru'],
-    queryFn: () => getTagTranslations({ edge: edgeId, locale: 'ru' }),
-    enabled: Boolean(edgeId),
-    staleTime: 10 * 60 * 1000,
   });
 
   useEffect(() => {
@@ -100,16 +95,7 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     eventSource.onerror = () => setCurrentEventsConnected(false);
     eventSource.onmessage = (message) => {
       const event = JSON.parse(message.data) as CurrentEvent;
-
-      queryClient.setQueryData<CurrentResponse>(['current', edgeId], (previous) => {
-        const byTag = new Map((previous?.items ?? []).map((item) => [item.tag, item]));
-        event.items.forEach((item) => byTag.set(item.tag, item));
-
-        return {
-          edge: event.edge,
-          items: Array.from(byTag.values()).sort((left, right) => left.tag.localeCompare(right.tag)),
-        };
-      });
+      queryClient.setQueryData<CurrentResponse>(['current', edgeId], event);
     };
 
     return () => {
@@ -119,8 +105,8 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
   }, [edgeId, queryClient]);
 
   const tagLabels = useMemo(() => {
-    return Object.fromEntries((tagTranslations.data?.items ?? []).map((item) => [item.tag, item.displayName]));
-  }, [tagTranslations.data?.items]);
+    return Object.fromEntries((current.data?.items ?? []).map((item) => [item.tag, getItemLabel(item)]));
+  }, [current.data?.items]);
 
   const getTagLabel = (tag: string) => tagLabels[tag] ?? tag;
 
@@ -129,9 +115,21 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     const items = current.data?.items ?? [];
 
     return query
-      ? items.filter((item) => `${item.tag} ${tagLabels[item.tag] ?? ''}`.toLowerCase().includes(query))
+      ? items.filter((item) =>
+          [
+            item.tag,
+            item.name,
+            item.comment,
+            item.tagGroup,
+            item.unitOfMeasurement,
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(query),
+        )
       : items;
-  }, [current.data?.items, search, tagLabels]);
+  }, [current.data?.items, search]);
 
   const latestUpdatedAt = useMemo(() => {
     const latest = (current.data?.items ?? []).reduce<number | null>((max, item) => {
@@ -142,13 +140,14 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
     return latest === null ? undefined : new Date(latest);
   }, [current.data?.items]);
 
-  const liveCount = current.data?.items.filter((item) => {
-    const ageSeconds = (Date.now() - new Date(item.time).getTime()) / 1000;
-    return ageSeconds <= 30;
-  }).length ?? 0;
+  const liveCount =
+    current.data?.items.filter((item) => {
+      const ageSeconds = (Date.now() - new Date(item.time).getTime()) / 1000;
+      return ageSeconds <= 30;
+    }).length ?? 0;
 
   const history = useQuery({
-    queryKey: ['history', edgeId, selectedTags, range.from, range.to, valueMode],
+    queryKey: ['history', edgeId, selectedTags, range.from, range.to],
     queryFn: () =>
       getHistory({
         edge: edgeId,
@@ -156,7 +155,6 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
         from: toIsoFromInput(range.from),
         to: toIsoFromInput(range.to),
         targetPoints: 1600,
-        valueMode,
       }),
     enabled: Boolean(edgeId && selectedTags.length),
     refetchInterval: 5_000,
@@ -238,6 +236,15 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
             <Wrench size={18} />
             <span className="nav-label">Оборудование</span>
           </button>
+          {/* Электросхемы временно скрыты до готовности опубликованных схем и diagram-service. */}
+          {/* <button
+            className={`nav-item nav-item--button ${view === 'electrical' ? 'nav-item--active' : ''}`}
+            type="button"
+            onClick={() => navigate(`${edgePath}/electrical`)}
+          >
+            <CircuitBoard size={18} />
+            <span className="nav-label">Электросхемы</span>
+          </button> */}
         </nav>
       </aside>
 
@@ -246,6 +253,9 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
           <div>
             <span className="page-kicker">Операторская панель</span>
             <h1>Буровая установка {edgeId}</h1>
+            <span className={`current-transport current-transport--${currentEventsConnected ? 'sse' : 'polling'}`}>
+              {currentEventsConnected ? 'SSE live' : 'polling'}
+            </span>
           </div>
           <div className="topbar-actions">
             <button type="button" className="ghost-button" onClick={() => navigate('/edges')}>
@@ -258,7 +268,7 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
             {auth.enabled ? (
               <button type="button" className="ghost-button" onClick={() => void auth.logout()}>
                 <LogOut size={17} />
-                Разлогиниться
+                Выйти
               </button>
             ) : null}
           </div>
@@ -285,12 +295,9 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
             history={history.data}
             historyLoading={history.isPending && selectedTags.length > 0}
             historySource={history.data?.source}
-            resolutionSeconds={history.data?.resolutionSeconds}
             range={range}
-            valueMode={valueMode}
             onSearchChange={setSearch}
             onRangeChange={setRange}
-            onValueModeChange={setValueMode}
             onToggleTag={toggleTag}
             onSelectFirstTags={selectFirstTags}
             onSelectVisibleTags={selectVisibleTags}
@@ -315,6 +322,9 @@ export function EdgeDetailPage({ view }: EdgeDetailPageProps) {
         ) : null}
 
         {view === 'equipment' ? <EquipmentView /> : null}
+
+        {/* Электросхемы временно скрыты до готовности опубликованных схем и diagram-service. */}
+        {/* {view === 'electrical' ? <ElectricalSchematicsPage edgeId={edgeId} /> : null} */}
       </section>
     </main>
   );
@@ -357,7 +367,7 @@ function OverviewView({
         </div>
         <div className="summary-card">
           <span>Последнее обновление</span>
-          <strong>{latestUpdatedAt ? formatDateTime(latestUpdatedAt) : '—'}</strong>
+          <strong>{latestUpdatedAt ? formatDateTime(latestUpdatedAt) : '-'}</strong>
         </div>
       </div>
 
@@ -379,6 +389,11 @@ function OverviewView({
             <Wrench size={18} />
             Состояние оборудования
           </button>
+          {/* Электросхемы временно скрыты до готовности опубликованных схем и diagram-service. */}
+          {/* <button type="button" onClick={onOpenElectrical}>
+            <CircuitBoard size={18} />
+            Электросхемы
+          </button> */}
           <button type="button">
             <CalendarClock size={18} />
             Техническое обслуживание
@@ -389,7 +404,7 @@ function OverviewView({
   );
 }
 
-/** Управляет выбором тегов, диапазона и режима агрегации для исторического графика. */
+/** Управляет выбором тегов и диапазона для исторического графика cloud-v3. */
 function ArchiveView({
   items,
   search,
@@ -397,12 +412,9 @@ function ArchiveView({
   history,
   historyLoading,
   historySource,
-  resolutionSeconds,
   range,
-  valueMode,
   onSearchChange,
   onRangeChange,
-  onValueModeChange,
   onToggleTag,
   onSelectFirstTags,
   onSelectVisibleTags,
@@ -411,18 +423,15 @@ function ArchiveView({
   getTagLabel,
   tagLabels,
 }: {
-  items: Array<{ tag: string; value: number; time: string }>;
+  items: CurrentItem[];
   search: string;
   selectedTags: string[];
-  history: Parameters<typeof HistoryChart>[0]['data'];
+  history?: HistoryResponse;
   historyLoading: boolean;
   historySource?: string;
-  resolutionSeconds?: number | null;
-  range: { from: string; to: string };
-  valueMode: 'avg' | 'last' | 'min' | 'max';
+  range: DateRangeState;
   onSearchChange: (value: string) => void;
-  onRangeChange: (value: { from: string; to: string }) => void;
-  onValueModeChange: (value: 'avg' | 'last' | 'min' | 'max') => void;
+  onRangeChange: (value: DateRangeState) => void;
   onToggleTag: (tag: string) => void;
   onSelectFirstTags: () => void;
   onSelectVisibleTags: () => void;
@@ -447,8 +456,7 @@ function ArchiveView({
         </div>
         <div className="source-chip">
           <DatabaseZap size={16} />
-          {historySource ?? 'source'}
-          {resolutionSeconds ? ` · ${resolutionSeconds}s` : ''}
+          cloud-v3 · {historySource ?? 'ожидание'}
         </div>
       </div>
 
@@ -497,6 +505,7 @@ function ArchiveView({
             <div className="tag-select-list">
               {items.map((item) => {
                 const selected = selectedTags.includes(item.tag);
+                const label = getTagLabel(item.tag);
                 return (
                   <button
                     key={item.tag}
@@ -506,10 +515,10 @@ function ArchiveView({
                     onClick={() => onToggleTag(item.tag)}
                   >
                     <span className="tag-select-item__name">
-                      <span>{getTagLabel(item.tag)}</span>
-                      {getTagLabel(item.tag) !== item.tag ? <small>{item.tag}</small> : null}
+                      <span>{label}</span>
+                      {label !== item.tag ? <small>{item.tag}</small> : null}
                     </span>
-                    <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: 3 })}</strong>
+                    <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: item.precision ?? 3 })}</strong>
                   </button>
                 );
               })}
@@ -543,15 +552,6 @@ function ArchiveView({
               onChange={(event) => onRangeChange({ ...range, to: event.target.value })}
             />
           </label>
-          <label>
-            Режим
-            <select value={valueMode} onChange={(event) => onValueModeChange(event.target.value as typeof valueMode)}>
-              <option value="avg">avg</option>
-              <option value="last">last</option>
-              <option value="min">min</option>
-              <option value="max">max</option>
-            </select>
-          </label>
         </div>
 
         {selectedTags.length ? (
@@ -570,7 +570,7 @@ function ArchiveView({
   );
 }
 
-/** Встраивает страницу активного оборудования из TOиР light почти на всю рабочую область. */
+/** Встраивает страницу активного оборудования из ТОиР light почти на всю рабочую область. */
 function EquipmentView() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
 

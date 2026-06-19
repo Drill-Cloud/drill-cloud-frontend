@@ -1,7 +1,7 @@
 /** Форматирует числовое значение показателя для карточек и мини-плиток. */
 export function formatNumber(value: number): string {
   if (!Number.isFinite(value)) {
-    return '—';
+    return '-';
   }
 
   return new Intl.NumberFormat('ru-RU', {
@@ -9,11 +9,11 @@ export function formatNumber(value: number): string {
   }).format(value);
 }
 
-/** Приводит дату/время к короткому русскому формату для операторского интерфейса. */
+/** Приводит дату и время к короткому русскому формату для операторского интерфейса. */
 export function formatDateTime(value: string | number | Date): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return '—';
+    return '-';
   }
 
   return new Intl.DateTimeFormat('ru-RU', {
@@ -27,7 +27,6 @@ export function formatDateTime(value: string | number | Date): string {
 
 /** Конвертирует Date в формат, который ожидает input[type="datetime-local"]. */
 export function toInputDateTimeValue(date: Date): string {
-  /** Дополняет часть даты ведущим нулем для стабильного input-формата. */
   const pad = (part: number) => String(part).padStart(2, '0');
   return [
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,

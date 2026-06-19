@@ -18,6 +18,38 @@
   border-radius: var(--radius);
 }
 
+.chart-tooltip {
+  min-width: 240px;
+}
+
+.chart-tooltip-title {
+  margin-bottom: 8px;
+  color: #e5e7eb;
+  font-weight: 750;
+}
+
+.chart-tooltip-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 5px;
+}
+
+.chart-tooltip-row span {
+  min-width: 0;
+  overflow: hidden;
+  color: #cbd5e1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-tooltip-row strong {
+  color: #f8fafc;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
 .chart-section--archive .chart-placeholder {
   flex: 1;
   min-height: 520px;

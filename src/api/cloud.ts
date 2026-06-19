@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_CLOUD_API_URL ?? 'http://localhost:3100';
+const API_URL = import.meta.env.VITE_CLOUD_API_URL ?? 'http://localhost:3101';
 
 export type HealthResponse = {
   status: 'ok';
@@ -13,8 +13,16 @@ export type CurrentItem = {
   edge: string;
   tag: string;
   value: number;
-  time: string;
+  createdAt: string;
   updatedAt: string;
+  time: string;
+  name: string | null;
+  tagGroup: string | null;
+  min: number | null;
+  max: number | null;
+  comment: string | null;
+  unitOfMeasurement: string | null;
+  precision: number | null;
 };
 
 export type CurrentResponse = {
@@ -27,27 +35,41 @@ export type CurrentEvent = CurrentResponse;
 export type EdgeItem = {
   id: string;
   name: string;
+  parentId: string | null;
+  tagIds: string[];
   tagCount: number;
   currentTagCount: number;
   liveTagCount: number;
   lastDataAt: string | null;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type EdgeResponse = {
   items: EdgeItem[];
 };
 
+export type TagItem = {
+  id: string;
+  name: string;
+  tagGroup: string | null;
+  min: number;
+  max: number;
+  comment: string;
+  unitOfMeasurement: string;
+  edgeIds: string[];
+  precision: number | null;
+};
+
+export type TagResponse = {
+  items: TagItem[];
+};
+
 export type HistoryPoint = {
   t: number;
   v: number;
-  first?: number;
-  min?: number;
-  max?: number;
-  avg?: number;
-  last?: number;
-  count?: number;
+  min: number;
+  avg: number;
+  max: number;
+  count: number;
 };
 
 export type HistorySeries = {
@@ -64,25 +86,9 @@ export type HistoryResponse = {
   from?: string;
   to?: string;
   resolutionSeconds?: number | null;
-  valueMode?: 'raw' | 'avg' | 'last' | 'first' | 'min' | 'max';
 };
 
-export type TagTranslationItem = {
-  edge: string;
-  tag: string;
-  locale: string;
-  displayName: string;
-  source: string | null;
-  updatedAt: string;
-};
-
-export type TagTranslationResponse = {
-  edge: string;
-  locale: string;
-  items: TagTranslationItem[];
-};
-
-/** Выполняет типизированный GET-запрос к cloud-v2 и централизованно обрабатывает ошибки HTTP. */
+/** Выполняет типизированный GET-запрос к cloud-v3 и централизованно обрабатывает HTTP-ошибки. */
 async function request<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T> {
   const url = new URL(path, API_URL);
   Object.entries(params ?? {}).forEach(([key, value]) => {
@@ -100,17 +106,22 @@ async function request<T>(path: string, params?: Record<string, string | number 
   return response.json() as Promise<T>;
 }
 
-/** Запрашивает состояние cloud-v2 и подключенной базы данных. */
+/** Запрашивает состояние cloud-v3 и подключенной базы данных. */
 export function getHealth(): Promise<HealthResponse> {
   return request<HealthResponse>('/health');
 }
 
-/** Возвращает список edge-установок, доступных в cloud-v2. */
+/** Возвращает список edge-установок, доступных в cloud-v3. */
 export function getEdges(): Promise<EdgeResponse> {
   return request<EdgeResponse>('/edge');
 }
 
-/** Загружает текущие значения показателей для выбранного edge. */
+/** Загружает справочник тегов, используя tag.name как отображаемое имя. */
+export function getTags(params: { edge?: string; search?: string } = {}): Promise<TagResponse> {
+  return request<TagResponse>('/tag', params);
+}
+
+/** Загружает текущие значения показателей для выбранного edge вместе с метаданными тегов. */
 export function getCurrent(edge: string, tags?: string[]): Promise<CurrentResponse> {
   return request<CurrentResponse>('/current', {
     edge,
@@ -118,7 +129,7 @@ export function getCurrent(edge: string, tags?: string[]): Promise<CurrentRespon
   });
 }
 
-/** Формирует URL SSE-потока для live-обновлений текущих значений. */
+/** Формирует URL SSE-потока текущих значений для выбранного edge. */
 export function getCurrentEventsUrl(edge: string, tags?: string[]): string {
   const url = new URL('/current/events', API_URL);
   url.searchParams.set('edge', edge);
@@ -130,14 +141,13 @@ export function getCurrentEventsUrl(edge: string, tags?: string[]): string {
   return url.toString();
 }
 
-/** Запрашивает исторические ряды для графика с учетом диапазона, тегов и режима агрегации. */
+/** Запрашивает исторические ряды с avg-линией и min/max-диапазоном для графика. */
 export function getHistory(params: {
   edge: string;
   tags?: string[];
   from?: string;
   to?: string;
   targetPoints?: number;
-  valueMode?: 'avg' | 'last' | 'first' | 'min' | 'max';
 }): Promise<HistoryResponse> {
   return request<HistoryResponse>('/history', {
     edge: params.edge,
@@ -145,19 +155,5 @@ export function getHistory(params: {
     from: params.from,
     to: params.to,
     targetPoints: params.targetPoints,
-    valueMode: params.valueMode,
-  });
-}
-
-/** Загружает русскоязычный справочник названий тегов для выбранного edge. */
-export function getTagTranslations(params: {
-  edge: string;
-  locale?: string;
-  tags?: string[];
-}): Promise<TagTranslationResponse> {
-  return request<TagTranslationResponse>('/tag-translations', {
-    edge: params.edge,
-    locale: params.locale ?? 'ru',
-    tags: params.tags?.join(','),
   });
 }

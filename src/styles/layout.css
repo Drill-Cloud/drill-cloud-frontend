@@ -146,7 +146,8 @@
 }
 
 .workspace--archive,
-.workspace--equipment {
+.workspace--equipment,
+.workspace--electrical {
   display: flex;
   flex-direction: column;
   overflow: auto;

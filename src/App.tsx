@@ -25,6 +25,8 @@ export default function App() {
         <Route path="/edges/:edgeId/archive" element={<EdgeDetailPage view="archive" />} />
         <Route path="/edges/:edgeId/indicators" element={<EdgeDetailPage view="indicators" />} />
         <Route path="/edges/:edgeId/equipment" element={<EdgeDetailPage view="equipment" />} />
+        {/* Электросхемы временно скрыты до готовности опубликованных схем и diagram-service. */}
+        {/* <Route path="/edges/:edgeId/electrical" element={<EdgeDetailPage view="electrical" />} /> */}
         <Route path="*" element={<Navigate to="/edges" replace />} />
       </Routes>
     </BrowserRouter>

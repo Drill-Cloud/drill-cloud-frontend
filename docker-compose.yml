@@ -3,7 +3,7 @@ services:
     build:
       context: .
       args:
-        VITE_CLOUD_API_URL: ${VITE_CLOUD_API_URL:-http://localhost:3100}
+        VITE_CLOUD_API_URL: ${VITE_CLOUD_API_URL:-http://localhost:3101}
         VITE_DEFAULT_EDGE: ${VITE_DEFAULT_EDGE:-edge5}
     expose:
       - "80"

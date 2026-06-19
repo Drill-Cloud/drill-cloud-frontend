@@ -1,5 +1,5 @@
 import { Activity, Check, Clock3, Plus } from 'lucide-react';
-import type { CurrentItem } from '../api/cloud';
+import type { CurrentItem } from '../entities/current/types';
 import { formatNumber } from '../utils/format';
 import { getMetricStatus, type MetricStatusInfo } from '../utils/metricStatus';
 

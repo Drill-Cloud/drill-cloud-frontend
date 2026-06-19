@@ -1,4 +1,4 @@
-import type { CurrentItem } from '../api/cloud';
+import type { CurrentItem } from '../entities/current/types';
 
 export type MetricStatus = 'normal' | 'warning' | 'critical';
 

@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Gauge, Menu, PanelLeftClose, PanelLeftOpen, Wrench } from 'lucide-react';
+import { Activity, BarChart3, Gauge, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { DetailView } from '../types';
 
 type EdgeSidebarProps = {
@@ -55,14 +55,6 @@ export function EdgeSidebar({ collapsed, edgePath, view, onNavigate, onToggleCol
         >
           <Activity size={18} />
           <span className="nav-label">Показатели</span>
-        </button>
-        <button
-          className={`nav-item nav-item--button ${view === 'equipment' ? 'nav-item--active' : ''}`}
-          type="button"
-          onClick={() => onNavigate(`${edgePath}/equipment`)}
-        >
-          <Wrench size={18} />
-          <span className="nav-label">Оборудование</span>
         </button>
       </nav>
     </aside>

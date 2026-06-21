@@ -1,14 +1,12 @@
-import { Activity, BarChart3, CalendarClock, Wrench } from 'lucide-react';
+import { Activity, BarChart3, CalendarClock } from 'lucide-react';
 import { formatDateTime } from '../../../utils/format';
 
 type OverviewViewProps = {
   edgeId: string;
   latestUpdatedAt?: Date;
   liveCount: number;
-  selectedCount: number;
   totalTags: number;
   onOpenArchive: () => void;
-  onOpenEquipment: () => void;
   onOpenIndicators: () => void;
 };
 
@@ -16,10 +14,8 @@ export function OverviewView({
   edgeId,
   latestUpdatedAt,
   liveCount,
-  selectedCount,
   totalTags,
   onOpenArchive,
-  onOpenEquipment,
   onOpenIndicators,
 }: OverviewViewProps) {
   return (
@@ -34,8 +30,8 @@ export function OverviewView({
           <strong>{liveCount}</strong>
         </div>
         <div className="summary-card">
-          <span>Выбрано для графика</span>
-          <strong>{selectedCount}</strong>
+          <span>Архив</span>
+          <strong>1</strong>
         </div>
         <div className="summary-card">
           <span>Последнее обновление</span>
@@ -56,10 +52,6 @@ export function OverviewView({
           <button type="button" onClick={onOpenArchive}>
             <BarChart3 size={18} />
             Архив и график
-          </button>
-          <button type="button" onClick={onOpenEquipment}>
-            <Wrench size={18} />
-            Состояние оборудования
           </button>
           <button type="button">
             <CalendarClock size={18} />

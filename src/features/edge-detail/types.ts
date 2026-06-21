@@ -1,1 +1,1 @@
-export type DetailView = 'overview' | 'archive' | 'indicators' | 'equipment';
+export type DetailView = 'overview' | 'archive' | 'indicators';

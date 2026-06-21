@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Clock3, Gauge, LogOut, RefreshCw, Search, ShieldAlert, Wrench } from 'lucide-react';
+import { ArrowRight, Clock3, Gauge, LogOut, RefreshCw, Search, ShieldAlert } from 'lucide-react';
 import edgeImage from '../../assets/edge.png';
 import { getEdges } from '../../entities/edge/api';
 import type { EdgeItem } from '../../entities/edge/types';
@@ -8,7 +8,6 @@ import { useAuth } from '../../auth/authContext';
 
 type EdgesDashboardProps = {
   onOpenEdge: (edgeId: string) => void;
-  onOpenEquipment: (edgeId: string) => void;
 };
 
 function getEdgeTitle(edge: EdgeItem): string {
@@ -21,7 +20,7 @@ function filterEdges(edges: EdgeItem[], search: string): EdgeItem[] {
 }
 
 /** Отображает список буровых без расчетов по текущим значениям. */
-export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardProps) {
+export function EdgesDashboard({ onOpenEdge }: EdgesDashboardProps) {
   const [search, setSearch] = useState('');
   const auth = useAuth();
   const edges = useQuery({
@@ -70,7 +69,6 @@ export function EdgesDashboard({ onOpenEdge, onOpenEquipment }: EdgesDashboardPr
               key={edge.id}
               edge={edge}
               onOpenEdge={onOpenEdge}
-              onOpenEquipment={onOpenEquipment}
             />
           ))}
         </section>
@@ -103,11 +101,9 @@ function StatBlock({
 function EdgeCard({
   edge,
   onOpenEdge,
-  onOpenEquipment,
 }: {
   edge: EdgeItem;
   onOpenEdge: (edgeId: string) => void;
-  onOpenEquipment: (edgeId: string) => void;
 }) {
   const title = getEdgeTitle(edge);
 
@@ -124,10 +120,6 @@ function EdgeCard({
       </header>
 
       <div className="edge-card__actions" aria-label={`Разделы ${title}`}>
-        <button type="button" onClick={() => onOpenEquipment(edge.id)}>
-          <Wrench size={15} />
-          Оборудование
-        </button>
         <button type="button">
           <Gauge size={15} />
           Состояние байпасов

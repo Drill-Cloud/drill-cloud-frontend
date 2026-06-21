@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { CalendarClock, ChevronDown, DatabaseZap, Search } from 'lucide-react';
+import type { RefObject } from 'react';
+import { useRef } from 'react';
+import { CalendarDays, CalendarClock, ChevronDown, Clock3, DatabaseZap, Search } from 'lucide-react';
 import type { CurrentItem } from '../../../entities/current/types';
 import type { HistoryResponse } from '../../../entities/history/types';
 import { HistoryChart } from '../../../features/history-chart/HistoryChart';
@@ -27,6 +29,54 @@ type ArchiveViewProps = {
   onToggleTag: (tag: string) => void;
 };
 
+type RangePart = 'from' | 'to';
+type RangeInputPart = 'date' | 'time';
+
+function getRangeInputPart(value: string, part: RangeInputPart): string {
+  const [date = '', time = ''] = value.split('T');
+  return part === 'date' ? date : time;
+}
+
+function updateRangeInputPart(value: string, part: RangeInputPart, nextValue: string): string {
+  const date = getRangeInputPart(value, 'date');
+  const time = getRangeInputPart(value, 'time');
+  return part === 'date' ? `${nextValue}T${time}` : `${date}T${nextValue}`;
+}
+
+function openInputPicker(input: HTMLInputElement | null): void {
+  input?.focus();
+  input?.showPicker?.();
+}
+
+type DateRangeFieldProps = {
+  icon: 'date' | 'time';
+  inputRef: RefObject<HTMLInputElement | null>;
+  type: 'date' | 'time';
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function DateRangeField({ icon, inputRef, type, value, onChange }: DateRangeFieldProps) {
+  const Icon = icon === 'date' ? CalendarDays : Clock3;
+  const label = icon === 'date' ? 'Открыть календарь' : 'Открыть выбор времени';
+
+  return (
+    <div className="archive-date-field" onClick={() => openInputPicker(inputRef.current)}>
+      <button type="button" className="archive-date-picker-button" aria-label={label}>
+        <Icon size={16} />
+      </button>
+      <input
+        ref={inputRef}
+        aria-label={label}
+        className={`archive-date-input archive-date-input--${type}`}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
+  );
+}
+
 export function ArchiveView({
   getTagLabel,
   history,
@@ -49,6 +99,16 @@ export function ArchiveView({
   const [selectorOpen, setSelectorOpen] = useState(false);
   const selectedPreview = selectedTags.slice(0, 10);
   const hiddenSelectedCount = Math.max(0, selectedTags.length - selectedPreview.length);
+  const fromDateRef = useRef<HTMLInputElement>(null);
+  const fromTimeRef = useRef<HTMLInputElement>(null);
+  const toDateRef = useRef<HTMLInputElement>(null);
+  const toTimeRef = useRef<HTMLInputElement>(null);
+  const updateRangePart = (rangePart: RangePart, inputPart: RangeInputPart, value: string) => {
+    onRangeChange({
+      ...range,
+      [rangePart]: updateRangeInputPart(range[rangePart], inputPart, value),
+    });
+  };
 
   return (
     <section className="chart-section chart-section--archive">
@@ -148,22 +208,40 @@ export function ArchiveView({
               </button>
             ))}
           </div>
-          <label>
-            С
-            <input
-              type="datetime-local"
-              value={range.from}
-              onChange={(event) => onRangeChange({ ...range, from: event.target.value })}
+          <div className="archive-date-range">
+            <span>С</span>
+            <DateRangeField
+              icon="date"
+              inputRef={fromDateRef}
+              type="date"
+              value={getRangeInputPart(range.from, 'date')}
+              onChange={(value) => updateRangePart('from', 'date', value)}
             />
-          </label>
-          <label>
-            По
-            <input
-              type="datetime-local"
-              value={range.to}
-              onChange={(event) => onRangeChange({ ...range, to: event.target.value })}
+            <DateRangeField
+              icon="time"
+              inputRef={fromTimeRef}
+              type="time"
+              value={getRangeInputPart(range.from, 'time')}
+              onChange={(value) => updateRangePart('from', 'time', value)}
             />
-          </label>
+          </div>
+          <div className="archive-date-range">
+            <span>По</span>
+            <DateRangeField
+              icon="date"
+              inputRef={toDateRef}
+              type="date"
+              value={getRangeInputPart(range.to, 'date')}
+              onChange={(value) => updateRangePart('to', 'date', value)}
+            />
+            <DateRangeField
+              icon="time"
+              inputRef={toTimeRef}
+              type="time"
+              value={getRangeInputPart(range.to, 'time')}
+              onChange={(value) => updateRangePart('to', 'time', value)}
+            />
+          </div>
         </div>
 
         {selectedTags.length ? (

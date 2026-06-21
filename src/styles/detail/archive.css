@@ -181,6 +181,97 @@
   flex: 0 0 auto;
 }
 
+.archive-date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.archive-date-input {
+  color-scheme: dark;
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  padding: 0;
+  cursor: text;
+  outline: none;
+}
+
+.archive-date-input--date {
+  width: 118px;
+}
+
+.archive-date-input--time {
+  width: 55px;
+}
+
+.archive-date-field {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.72);
+  cursor: pointer;
+}
+
+.archive-date-picker-button {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(201, 122, 61, 0.34);
+  border-radius: calc(var(--radius) - 4px);
+  background: rgba(201, 122, 61, 0.14);
+  color: var(--accent-soft);
+  cursor: pointer;
+}
+
+.archive-date-picker-button:hover,
+.archive-date-picker-button:focus-visible {
+  border-color: rgba(201, 122, 61, 0.62);
+  background: rgba(201, 122, 61, 0.24);
+  color: #fed7aa;
+  outline: none;
+}
+
+.archive-date-field:hover,
+.archive-date-field:focus-within {
+  border-color: var(--line-strong);
+  background: rgba(201, 122, 61, 0.14);
+}
+
+.archive-date-picker-button svg {
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.archive-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.archive-date-input::-webkit-datetime-edit,
+.archive-date-input::-webkit-datetime-edit-fields-wrapper,
+.archive-date-input::-webkit-datetime-edit-text,
+.archive-date-input::-webkit-datetime-edit-day-field,
+.archive-date-input::-webkit-datetime-edit-month-field,
+.archive-date-input::-webkit-datetime-edit-year-field,
+.archive-date-input::-webkit-datetime-edit-hour-field,
+.archive-date-input::-webkit-datetime-edit-minute-field {
+  color: var(--text);
+}
+
 @media (max-width: 1200px) {
   .tag-selector__header {
     grid-template-columns: 1fr;
@@ -190,5 +281,19 @@
 @media (max-width: 680px) {
   .tag-selector__tools {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .archive-date-range {
+    width: 100%;
+  }
+
+  .archive-date-field {
+    flex: 1;
+  }
+
+  .archive-date-input--date,
+  .archive-date-input--time {
+    width: 100%;
+    min-width: 0;
   }
 }

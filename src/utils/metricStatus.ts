@@ -8,17 +8,19 @@ export type MetricStatusInfo = {
   ageSeconds: number;
 };
 
-/** Классифицирует показатель по свежести данных до подключения реальных аварийных правил. */
+function isConfiguredLimit(value: number | null): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/** Классифицирует показатель по уставкам min/max из справочника tag. */
 export function getMetricStatus(item: CurrentItem, now = Date.now()): MetricStatusInfo {
   const measuredAt = new Date(item.time).getTime();
   const ageSeconds = Number.isFinite(measuredAt) ? Math.max(0, Math.round((now - measuredAt) / 1000)) : Number.POSITIVE_INFINITY;
+  const belowMin = isConfiguredLimit(item.min) && item.value < item.min;
+  const aboveMax = isConfiguredLimit(item.max) && item.value > item.max;
 
-  if (ageSeconds > 300) {
-    return { status: 'critical', label: 'нет связи', ageSeconds };
-  }
-
-  if (ageSeconds > 30) {
-    return { status: 'warning', label: 'устарело', ageSeconds };
+  if (belowMin || aboveMax) {
+    return { status: 'critical', label: 'за пределами уставки', ageSeconds };
   }
 
   return { status: 'normal', label: 'норма', ageSeconds };

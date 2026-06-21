@@ -1,0 +1,78 @@
+.indicator-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: min(560px, 100%);
+}
+
+.indicator-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.indicator-summary div {
+  position: relative;
+  overflow: hidden;
+  min-height: 76px;
+  padding: 13px;
+  border: 1px solid rgba(88, 103, 121, 0.46);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.052), transparent 34%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 10px),
+    rgba(2, 6, 23, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.48);
+}
+
+.indicator-summary div::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: rgba(212, 165, 116, 0.58);
+}
+
+.indicator-summary span {
+  display: block;
+  color: #9aa8ba;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.indicator-summary strong {
+  display: block;
+  margin-top: 9px;
+  color: #f8fafc;
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+@media (max-width: 1200px) {
+  .indicator-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .indicator-controls {
+    min-width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 680px) {
+  .indicator-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .indicator-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

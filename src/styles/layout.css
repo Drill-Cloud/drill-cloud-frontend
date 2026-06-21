@@ -146,21 +146,10 @@
 }
 
 .workspace--archive,
-.workspace--equipment,
 .workspace--electrical {
   display: flex;
   flex-direction: column;
   overflow: auto;
-}
-
-.workspace--equipment {
-  overflow: hidden;
-  padding: 14px;
-}
-
-.workspace--equipment .topbar {
-  flex: 0 0 auto;
-  margin-bottom: 12px;
 }
 
 .topbar {

@@ -5,6 +5,6 @@ export type { EdgeItem, EdgeResponse } from '../entities/edge/types';
 export { getHealth } from '../entities/health/api';
 export type { HealthResponse } from '../entities/health/types';
 export { getHistory } from '../entities/history/api';
-export type { HistoryPoint, HistoryRequest, HistoryResponse, HistorySeries } from '../entities/history/types';
+export type { HistoryPoint, HistoryRequest, HistoryResponse } from '../entities/history/types';
 export { getTags } from '../entities/tag/api';
 export type { TagItem, TagResponse } from '../entities/tag/types';

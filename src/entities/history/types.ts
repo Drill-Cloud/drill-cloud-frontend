@@ -1,24 +1,13 @@
 export type HistoryPoint = {
-  t: number;
-  min: number;
-  avg: number;
-  max: number;
-  count: number;
-};
-
-export type HistorySeries = {
-  edge: string;
-  tag: string;
-  points: HistoryPoint[];
+  time: string;
+  min_value: number;
+  avg_value: number;
+  max_value: number;
+  point_count: number;
 };
 
 export type HistoryResponse = {
-  edge: string;
-  tag: string;
-  granulate: string;
-  series: HistorySeries[];
-  from: string;
-  to: string;
+  rows: HistoryPoint[];
 };
 
 export type HistoryRequest = {

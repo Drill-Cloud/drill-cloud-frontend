@@ -12,7 +12,7 @@ export type HistoryChartOptionsInput = {
   to?: string;
   labelFormat?: HistoryAxisLabelFormat;
   legendData: string[];
-  tagLabels: Record<string, string>;
+  seriesLabel: string;
   tickIntervalMs?: number;
 };
 
@@ -23,7 +23,7 @@ export function createHistoryChartOptions({
   to,
   labelFormat,
   legendData,
-  tagLabels,
+  seriesLabel,
   tickIntervalMs,
 }: HistoryChartOptionsInput): EChartsOption {
   const xMin = from ? new Date(from).getTime() : undefined;
@@ -102,9 +102,6 @@ export function createHistoryChartOptions({
         endValue: dataZoomState.endValue,
       },
     ],
-    series:
-      data?.series.flatMap((series, index) =>
-        createSeriesOptions(series, index, tagLabels[series.tag] ?? series.tag),
-      ) ?? [],
+    series: data?.rows.length ? createSeriesOptions(data.rows, 0, seriesLabel) : [],
   };
 }

@@ -31,6 +31,7 @@ type HistoryChartProps = {
   to?: string;
   tickIntervalMs?: number;
   labelFormat?: HistoryAxisLabelFormat;
+  tag?: string;
   tagLabels?: Record<string, string>;
 };
 
@@ -42,13 +43,12 @@ export function HistoryChart({
   to,
   tickIntervalMs,
   labelFormat,
+  tag,
   tagLabels = {},
 }: HistoryChartProps) {
   const dataZoomRef = useRef<DataZoomState | null>(null);
-  const legendData = useMemo(
-    () => data?.series.map((series) => tagLabels[series.tag] ?? series.tag) ?? [],
-    [data?.series, tagLabels],
-  );
+  const seriesLabel = tag ? tagLabels[tag] ?? tag : '';
+  const legendData = useMemo(() => (data?.rows.length && seriesLabel ? [seriesLabel] : []), [data?.rows.length, seriesLabel]);
 
   const option = useMemo(
     () =>
@@ -59,10 +59,10 @@ export function HistoryChart({
         to,
         labelFormat,
         legendData,
-        tagLabels,
+        seriesLabel,
         tickIntervalMs,
       }),
-    [data, from, labelFormat, legendData, tagLabels, tickIntervalMs, to],
+    [data, from, labelFormat, legendData, seriesLabel, tickIntervalMs, to],
   );
 
   const onChartEvents = useMemo(
@@ -84,7 +84,7 @@ export function HistoryChart({
     return <div className="chart-placeholder">Загрузка графика...</div>;
   }
 
-  if (!data?.series.length) {
+  if (!data?.rows.length) {
     return <div className="chart-placeholder">Нет данных для выбранного диапазона</div>;
   }
 

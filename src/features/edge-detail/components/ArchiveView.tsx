@@ -253,6 +253,7 @@ export function ArchiveView({
             to={toIsoFromInput(range.to)}
             tickIntervalMs={historyAxis.tickIntervalMs}
             labelFormat={historyAxis.labelFormat}
+            tag={selectedTags[0]}
             tagLabels={tagLabels}
           />
         ) : (

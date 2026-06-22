@@ -78,7 +78,7 @@ export function EdgeHistoryPage() {
         selectedTags={selectedTags}
         history={history.data}
         historyLoading={history.isPending && selectedTags.length > 0}
-        historyGranulate={history.data?.granulate ?? historyGranularity.granulate}
+        historyGranulate={historyGranularity.granulate}
         historyAxis={historyGranularity}
         range={range}
         onSearchChange={setSearch}

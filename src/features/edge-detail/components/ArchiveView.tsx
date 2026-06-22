@@ -1,20 +1,18 @@
 import { useState } from 'react';
 import type { RefObject } from 'react';
 import { useRef } from 'react';
-import { CalendarDays, CalendarClock, ChevronDown, Clock3, DatabaseZap, Search } from 'lucide-react';
+import { CalendarDays, CalendarClock, Check, ChevronDown, Clock3, DatabaseZap, Search } from 'lucide-react';
 import type { CurrentItem } from '../../../entities/current/types';
-import type { HistoryResponse } from '../../../entities/history/types';
 import { HistoryChart } from '../../../features/history-chart/HistoryChart';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../../../features/history/dateRange';
 import { toIsoFromInput } from '../../../utils/format';
 import type { HistoryGranularity } from '../../../utils/historyGranularity';
 
 type ArchiveViewProps = {
+  edgeId: string;
   getTagLabel: (tag: string) => string;
-  history?: HistoryResponse;
   historyAxis: HistoryGranularity;
   historyGranulate?: string;
-  historyLoading: boolean;
   items: CurrentItem[];
   range: DateRangeState;
   search: string;
@@ -78,11 +76,10 @@ function DateRangeField({ icon, inputRef, type, value, onChange }: DateRangeFiel
 }
 
 export function ArchiveView({
+  edgeId,
   getTagLabel,
-  history,
   historyAxis,
   historyGranulate,
-  historyLoading,
   items,
   range,
   search,
@@ -103,6 +100,8 @@ export function ArchiveView({
   const fromTimeRef = useRef<HTMLInputElement>(null);
   const toDateRef = useRef<HTMLInputElement>(null);
   const toTimeRef = useRef<HTMLInputElement>(null);
+  const fromIso = toIsoFromInput(range.from) as string;
+  const toIso = toIsoFromInput(range.to) as string;
   const updateRangePart = (rangePart: RangePart, inputPart: RangeInputPart, value: string) => {
     onRangeChange({
       ...range,
@@ -185,12 +184,16 @@ export function ArchiveView({
                     className={`tag-select-item ${selected ? 'tag-select-item--selected' : ''}`}
                     title={item.tag}
                     onClick={() => onToggleTag(item.tag)}
+                    aria-pressed={selected}
                   >
                     <span className="tag-select-item__name">
                       <span>{label}</span>
                       {label !== item.tag ? <small>{item.tag}</small> : null}
                     </span>
-                    <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: item.precision ?? 3 })}</strong>
+                    <span className="tag-select-item__side">
+                      <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: item.precision ?? 3 })}</strong>
+                      {selected ? <Check size={15} /> : null}
+                    </span>
                   </button>
                 );
               })}
@@ -247,13 +250,13 @@ export function ArchiveView({
         {selectedTags.length ? (
           <HistoryChart
             key={`${range.from}:${range.to}:${selectedTags.join(',')}`}
-            data={history}
-            loading={historyLoading}
-            from={toIsoFromInput(range.from)}
-            to={toIsoFromInput(range.to)}
+            edge={edgeId}
+            from={fromIso}
+            to={toIso}
+            granulate={historyAxis.granulate}
             tickIntervalMs={historyAxis.tickIntervalMs}
             labelFormat={historyAxis.labelFormat}
-            tag={selectedTags[0]}
+            tags={selectedTags}
             tagLabels={tagLabels}
           />
         ) : (

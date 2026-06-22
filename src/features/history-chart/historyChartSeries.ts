@@ -31,7 +31,7 @@ export function createSeriesOptions(points: HistoryPoint[], index: number, label
 
   return [
     {
-      name: `${label} min/max`,
+      name: label,
       type: 'line',
       data: spreadData,
       showSymbol: false,
@@ -50,7 +50,7 @@ export function createSeriesOptions(points: HistoryPoint[], index: number, label
       z: 1,
     },
     {
-      name: `${label} min`,
+      name: label,
       type: 'scatter',
       data: points.map((point) => [new Date(point.time).getTime(), point.min_value]),
       symbolSize: 4,
@@ -66,7 +66,7 @@ export function createSeriesOptions(points: HistoryPoint[], index: number, label
       z: 2,
     },
     {
-      name: `${label} max`,
+      name: label,
       type: 'scatter',
       data: points.map((point) => [new Date(point.time).getTime(), point.max_value]),
       symbolSize: 4,

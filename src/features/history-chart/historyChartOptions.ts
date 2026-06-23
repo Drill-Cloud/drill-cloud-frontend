@@ -1,29 +1,27 @@
 import type { EChartsOption } from 'echarts';
-import type { HistoryResponse } from '../../entities/history/types';
+import type { SeriesOption } from 'echarts';
 import type { HistoryAxisLabelFormat } from '../../utils/historyGranularity';
 import type { DataZoomState } from './chartTypes';
 import { formatAxisDate, formatTooltip } from './historyChartFormat';
-import { createSeriesOptions, SERIES_COLORS } from './historyChartSeries';
+import { SERIES_COLORS } from './historyChartSeries';
 
 export type HistoryChartOptionsInput = {
-  data?: HistoryResponse;
   dataZoomState: DataZoomState;
   from?: string;
   to?: string;
   labelFormat?: HistoryAxisLabelFormat;
   legendData: string[];
-  tagLabels: Record<string, string>;
+  series: SeriesOption[];
   tickIntervalMs?: number;
 };
 
 export function createHistoryChartOptions({
-  data,
   dataZoomState,
   from,
   to,
   labelFormat,
   legendData,
-  tagLabels,
+  series,
   tickIntervalMs,
 }: HistoryChartOptionsInput): EChartsOption {
   const xMin = from ? new Date(from).getTime() : undefined;
@@ -102,9 +100,6 @@ export function createHistoryChartOptions({
         endValue: dataZoomState.endValue,
       },
     ],
-    series:
-      data?.series.flatMap((series, index) =>
-        createSeriesOptions(series, index, tagLabels[series.tag] ?? series.tag),
-      ) ?? [],
+    series,
   };
 }

@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getCurrent } from '../../entities/current/api';
-import { getHistory } from '../../entities/history/api';
 import { toIsoFromInput } from '../../utils/format';
 import { getHistoryGranularity } from '../../utils/historyGranularity';
 import { createCurrentTagLabels, filterCurrentItems } from '../current/model';
@@ -13,6 +12,7 @@ import { EdgePageLayout } from './components/EdgePageLayout';
 
 export function EdgeHistoryPage() {
   const { edgeId = '' } = useParams();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [range, setRange] = useState(() => createRange(24));
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -30,23 +30,8 @@ export function EdgeHistoryPage() {
   const from = toIsoFromInput(range.from) as string;
   const to = toIsoFromInput(range.to) as string;
   const historyGranularity = useMemo(() => getHistoryGranularity(from, to), [from, to]);
-  const selectedTag = selectedTags[0];
-  const history = useQuery({
-    queryKey: ['history', edgeId, selectedTag, from, to, historyGranularity.granulate],
-    queryFn: () =>
-      getHistory({
-        edge: edgeId,
-        tag: selectedTag as string,
-        from,
-        to,
-        granulate: historyGranularity.granulate,
-      }),
-    enabled: Boolean(edgeId && selectedTag),
-    refetchInterval: false,
-  });
-
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) => (prev.includes(tag) ? [] : [tag]));
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((selected) => selected !== tag) : [...prev, tag]));
   };
 
   const selectFirstTags = () => {
@@ -54,7 +39,7 @@ export function EdgeHistoryPage() {
   };
 
   const selectVisibleTags = () => {
-    setSelectedTags(visibleItems[0] ? [visibleItems[0].tag] : []);
+    setSelectedTags((prev) => Array.from(new Set([...prev, ...visibleItems.map((item) => item.tag)])));
   };
 
   const clearVisibleTags = () => {
@@ -69,16 +54,15 @@ export function EdgeHistoryPage() {
       view="archive"
       onRefresh={() => {
         void current.refetch();
-        void history.refetch();
+        void queryClient.invalidateQueries({ queryKey: ['history', edgeId] });
       }}
     >
       <ArchiveView
+        edgeId={edgeId}
         items={visibleItems}
         search={search}
         selectedTags={selectedTags}
-        history={history.data}
-        historyLoading={history.isPending && selectedTags.length > 0}
-        historyGranulate={history.data?.granulate ?? historyGranularity.granulate}
+        historyGranulate={historyGranularity.granulate}
         historyAxis={historyGranularity}
         range={range}
         onSearchChange={setSearch}

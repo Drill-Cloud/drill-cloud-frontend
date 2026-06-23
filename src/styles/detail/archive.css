@@ -91,10 +91,19 @@
 }
 
 .tag-selector__tools button:hover,
-.tag-select-item:hover,
-.tag-select-item--selected {
+.tag-select-item:hover {
   border-color: var(--line-strong);
   background: rgba(201, 122, 61, 0.12);
+}
+
+.tag-select-item--selected {
+  border-color: rgba(232, 201, 160, 0.72);
+  background:
+    linear-gradient(135deg, rgba(201, 122, 61, 0.22), rgba(212, 165, 116, 0.08)),
+    rgba(15, 23, 42, 0.62);
+  box-shadow:
+    inset 3px 0 0 var(--accent-soft),
+    0 0 0 1px rgba(201, 122, 61, 0.12);
 }
 
 .selected-tags {
@@ -165,8 +174,26 @@
   font-size: 0.76rem;
 }
 
-.tag-select-item--selected span {
+.tag-select-item__side {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+}
+
+.tag-select-item__side svg {
+  flex: 0 0 auto;
+  color: var(--accent-soft);
+}
+
+.tag-select-item--selected .tag-select-item__name span,
+.tag-select-item--selected .tag-select-item__side strong {
   color: #f8fafc;
+}
+
+.tag-select-item--selected .tag-select-item__name small {
+  color: #e8c9a0;
 }
 
 .archive-chart {

@@ -1,92 +1,70 @@
-import { LineChart, ScatterChart } from 'echarts/charts';
-import {
-  DataZoomComponent,
-  GridComponent,
-  LegendComponent,
-  TooltipComponent,
-} from 'echarts/components';
-import * as echarts from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import ReactEChartsCore from 'echarts-for-react/esm/core.js';
-import { useMemo, useRef } from 'react';
-import type { HistoryResponse } from '../../entities/history/types';
+import { useCallback, useMemo, useRef } from 'react';
 import type { HistoryAxisLabelFormat } from '../../utils/historyGranularity';
 import type { DataZoomEventBatch, DataZoomState } from './chartTypes';
+import { HistoryChartArea } from './HistoryChartArea';
 import { createHistoryChartOptions } from './historyChartOptions';
-
-echarts.use([
-  LineChart,
-  ScatterChart,
-  GridComponent,
-  LegendComponent,
-  TooltipComponent,
-  DataZoomComponent,
-  CanvasRenderer,
-]);
+import { useHistoryChartQueries } from './useHistoryChartQueries';
+import { useHistoryChartSeries } from './useHistoryChartSeries';
 
 type HistoryChartProps = {
-  data?: HistoryResponse;
-  loading: boolean;
-  from?: string;
-  to?: string;
-  tickIntervalMs?: number;
+  edge: string;
+  from: string;
+  granulate: string;
   labelFormat?: HistoryAxisLabelFormat;
+  tags: string[];
+  tickIntervalMs?: number;
+  to: string;
   tagLabels?: Record<string, string>;
 };
 
-/** Рисует avg-линию, min/max-точки и вертикальный диапазон для агрегированной истории. */
+/** Контейнер истории: загружает выбранные теги и передает готовые серии в область ECharts. */
 export function HistoryChart({
-  data,
-  loading,
+  edge,
   from,
-  to,
-  tickIntervalMs,
+  granulate,
   labelFormat,
+  tags,
+  tickIntervalMs,
+  to,
   tagLabels = {},
 }: HistoryChartProps) {
   const dataZoomRef = useRef<DataZoomState | null>(null);
-  const legendData = useMemo(
-    () => data?.series.map((series) => tagLabels[series.tag] ?? series.tag) ?? [],
-    [data?.series, tagLabels],
-  );
+  const lines = useHistoryChartQueries({ edge, from, granulate, tags, to, tagLabels });
+  const series = useHistoryChartSeries(lines);
+  const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
+  const loading = lines.some((line) => line.loading);
 
   const option = useMemo(
     () =>
       createHistoryChartOptions({
-        data,
         dataZoomState: dataZoomRef.current ?? {},
         from,
         to,
         labelFormat,
         legendData,
-        tagLabels,
+        series,
         tickIntervalMs,
       }),
-    [data, from, labelFormat, legendData, tagLabels, tickIntervalMs, to],
+    [from, labelFormat, legendData, series, tickIntervalMs, to],
   );
 
-  const onChartEvents = useMemo(
-    () => ({
-      datazoom: (event: DataZoomEventBatch) => {
-        const state = event.batch?.[0] ?? event;
-        dataZoomRef.current = {
-          start: state.start,
-          end: state.end,
-          startValue: state.startValue,
-          endValue: state.endValue,
-        };
-      },
-    }),
-    [],
+  const handleDataZoom = useCallback((event: DataZoomEventBatch) => {
+    const state = event.batch?.[0] ?? event;
+    dataZoomRef.current = {
+      start: state.start,
+      end: state.end,
+      startValue: state.startValue,
+      endValue: state.endValue,
+    };
+  }, []);
+
+  return (
+    <HistoryChartArea
+      hasData={series.length > 0}
+      hasSelection={tags.length > 0}
+      loading={loading}
+      option={option}
+      onDataZoom={handleDataZoom}
+    />
   );
-
-  if (loading) {
-    return <div className="chart-placeholder">Загрузка графика...</div>;
-  }
-
-  if (!data?.series.length) {
-    return <div className="chart-placeholder">Нет данных для выбранного диапазона</div>;
-  }
-
-  return <ReactEChartsCore echarts={echarts} option={option} className="history-chart" onEvents={onChartEvents} lazyUpdate />;
 }

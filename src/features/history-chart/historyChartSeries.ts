@@ -1,5 +1,5 @@
 import type { SeriesOption } from 'echarts';
-import type { HistorySeries } from '../../entities/history/types';
+import type { HistoryPoint } from '../../entities/history/types';
 import type { AvgPointValue } from './chartTypes';
 
 export const SERIES_COLORS = [
@@ -14,24 +14,24 @@ export const SERIES_COLORS = [
 ];
 
 /** Создает avg-линию, вертикальные min/max-отрезки и точки экстремумов для одной серии. */
-export function createSeriesOptions(series: HistorySeries, index: number, label: string): SeriesOption[] {
+export function createSeriesOptions(points: HistoryPoint[], index: number, label: string): SeriesOption[] {
   const color = SERIES_COLORS[index % SERIES_COLORS.length];
-  const avgData: AvgPointValue[] = series.points.map((point) => [
-    point.t,
-    point.avg,
-    point.min,
-    point.max,
-    point.count,
-  ]);
-  const spreadData = series.points.flatMap((point) => [
-    [point.t, point.min],
-    [point.t, point.max],
-    [point.t, null],
-  ]);
+  const avgData: AvgPointValue[] = points.map((point) => {
+    const time = new Date(point.time).getTime();
+    return [time, point.avg_value, point.min_value, point.max_value, point.point_count];
+  });
+  const spreadData = points.flatMap((point) => {
+    const time = new Date(point.time).getTime();
+    return [
+      [time, point.min_value],
+      [time, point.max_value],
+      [time, null],
+    ];
+  });
 
   return [
     {
-      name: `${label} min/max`,
+      name: label,
       type: 'line',
       data: spreadData,
       showSymbol: false,
@@ -50,9 +50,9 @@ export function createSeriesOptions(series: HistorySeries, index: number, label:
       z: 1,
     },
     {
-      name: `${label} min`,
+      name: label,
       type: 'scatter',
-      data: series.points.map((point) => [point.t, point.min]),
+      data: points.map((point) => [new Date(point.time).getTime(), point.min_value]),
       symbolSize: 4,
       silent: true,
       tooltip: { show: false },
@@ -66,9 +66,9 @@ export function createSeriesOptions(series: HistorySeries, index: number, label:
       z: 2,
     },
     {
-      name: `${label} max`,
+      name: label,
       type: 'scatter',
-      data: series.points.map((point) => [point.t, point.max]),
+      data: points.map((point) => [new Date(point.time).getTime(), point.max_value]),
       symbolSize: 4,
       silent: true,
       tooltip: { show: false },

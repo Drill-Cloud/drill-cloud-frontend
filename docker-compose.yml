@@ -15,5 +15,5 @@ services:
       - proxy
 
 networks:
-  external:
-    true
+  proxy:
+    external: true

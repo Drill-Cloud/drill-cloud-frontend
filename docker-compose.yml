@@ -1,5 +1,6 @@
 services:
   drill-ui:
+    container_name: drill-ui${branch:+-${branch}}
     build:
       context: .
       args:

@@ -1,4 +1,4 @@
-import { getJson } from '../../shared/api/http';
+import { buildApiUrl, getJson } from '../../shared/api/http';
 import { cloudApiUrl } from '../../shared/config/env';
 import type { CurrentResponse } from './types';
 
@@ -9,8 +9,5 @@ export function getCurrent(edge: string, tags?: string[]): Promise<CurrentRespon
 
 /** Формирует URL SSE-потока текущих значений. */
 export function getCurrentEventsUrl(edge: string, tags?: string[]): string {
-  const url = new URL('/current/events', cloudApiUrl);
-  url.searchParams.set('edge', edge);
-  tags?.forEach((tag) => url.searchParams.append('tags', tag));
-  return url.toString();
+  return buildApiUrl(cloudApiUrl, '/current/events', { edge, tags });
 }

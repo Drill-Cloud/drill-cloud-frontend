@@ -8,8 +8,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-  },
-  preview: {
-    port: 4173,
+    proxy: {
+      '/api': {
+        target: 'https://beta.backend.drill.greact.ru',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
 });

@@ -4,7 +4,6 @@ services:
     build:
       context: .
       args:
-        VITE_CLOUD_API_URL: ${VITE_CLOUD_API_URL}
         VITE_DIAGRAM_API_URL: ${VITE_DIAGRAM_API_URL}
         VITE_TOIR_LIGHT_ORIGIN: ${VITE_TOIR_LIGHT_ORIGIN}
         VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}

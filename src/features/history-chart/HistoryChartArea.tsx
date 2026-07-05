@@ -31,7 +31,7 @@ export function HistoryChartArea({
     return <div className="chart-placeholder">Разверните список показателей и выберите серию для графика</div>;
   }
 
-  if (loading) {
+  if (!hasData && loading) {
     return <div className="chart-placeholder">Загрузка графика...</div>;
   }
 

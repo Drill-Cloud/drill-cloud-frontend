@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { EChartsOption } from 'echarts';
 import { getHistoryGranularity, type HistoryAxisLabelFormat } from '../../utils/historyGranularity';
 import type { DataZoomEventBatch, DataZoomState, HistoryZoomRange } from './chartTypes';
 import { HistoryChartArea } from './HistoryChartArea';
@@ -139,6 +140,7 @@ export function HistoryChart({
   const baseRangeRef = useRef(baseRange);
   const zoomRangeRef = useRef(zoomRange);
   const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastReadyOptionRef = useRef<EChartsOption | null>(null);
   const lines = useHistoryChartQueries({
     edge,
     from: zoomRange.from,
@@ -150,6 +152,7 @@ export function HistoryChart({
   const series = useHistoryChartSeries(lines, zoomRange.granulate);
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);
+  const hasData = series.length > 0;
 
   useEffect(() => {
     baseRangeRef.current = baseRange;
@@ -184,6 +187,18 @@ export function HistoryChart({
     [baseRange, legendData, series, zoomRange],
   );
 
+  // Во время lazy-загрузки нового zoom-диапазона оставляем на экране последний готовый график.
+  // Так canvas не заменяется loader-ом и пользователь не теряет визуальный контекст.
+  const fallbackOption = loading && !hasData ? lastReadyOptionRef.current : null;
+  const displayOption = fallbackOption ?? option;
+  const displayHasData = hasData || Boolean(fallbackOption);
+
+  useEffect(() => {
+    if (hasData) {
+      lastReadyOptionRef.current = option;
+    }
+  }, [hasData, option]);
+
   const handleDataZoom = useCallback((event: DataZoomEventBatch) => {
     const state = (event.batch ?? [event]).find(isXAxisDataZoom);
 
@@ -211,10 +226,10 @@ export function HistoryChart({
 
   return (
     <HistoryChartArea
-      hasData={series.length > 0}
+      hasData={displayHasData}
       hasSelection={tags.length > 0}
       loading={loading}
-      option={option}
+      option={displayOption}
       onDataZoom={handleDataZoom}
     />
   );

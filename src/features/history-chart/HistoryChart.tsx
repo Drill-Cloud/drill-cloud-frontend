@@ -18,6 +18,10 @@ type HistoryChartProps = {
 };
 
 /** Контейнер истории: загружает выбранные теги и передает готовые серии в область ECharts. */
+function isXAxisDataZoom(state: DataZoomState): boolean {
+  return state.dataZoomId?.startsWith('history-x-') || state.dataZoomIndex === 0 || state.dataZoomIndex === 1;
+}
+
 export function HistoryChart({
   edge,
   from,
@@ -49,7 +53,12 @@ export function HistoryChart({
   );
 
   const handleDataZoom = useCallback((event: DataZoomEventBatch) => {
-    const state = event.batch?.[0] ?? event;
+    const state = (event.batch ?? [event]).find(isXAxisDataZoom);
+
+    if (!state) {
+      return;
+    }
+
     dataZoomRef.current = {
       start: state.start,
       end: state.end,

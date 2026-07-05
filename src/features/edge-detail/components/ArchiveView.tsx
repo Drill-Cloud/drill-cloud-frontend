@@ -202,7 +202,12 @@ export function ArchiveView({
         ) : null}
       </div>
 
-      <div className="archive-chart">
+      <div
+        className="archive-chart"
+        onFocusCapture={() => setSelectorOpen(false)}
+        onPointerDown={() => setSelectorOpen(false)}
+        onPointerEnter={() => setSelectorOpen(false)}
+      >
         <div className="toolbar">
           <div className="segmented">
             {RANGE_PRESETS.map((preset) => (

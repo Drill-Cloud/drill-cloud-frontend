@@ -25,6 +25,19 @@ const WEEK = 7 * DAY;
 const MONTH = 30 * DAY;
 const YEAR = 365 * DAY;
 
+const GRANULATE_UNIT_MS: Record<string, number> = {
+  second: SECOND,
+  seconds: SECOND,
+  minute: MINUTE,
+  minutes: MINUTE,
+  hour: HOUR,
+  hours: HOUR,
+  day: DAY,
+  days: DAY,
+  week: WEEK,
+  weeks: WEEK,
+};
+
 type Rule = {
   maxMs: number;
   granulate: string;
@@ -59,4 +72,13 @@ export function getHistoryGranularity(from: string, to: string): HistoryGranular
       labelFormat: 'year',
     }
   );
+}
+
+/** Переводит текст грануляции API вроде "10 minutes" в миллисекунды. */
+export function parseGranulateMs(granulate: string): number {
+  const [amountText, unit = ''] = granulate.trim().split(/\s+/);
+  const amount = Number(amountText);
+  const unitMs = GRANULATE_UNIT_MS[unit.toLowerCase()];
+
+  return Number.isFinite(amount) && unitMs ? amount * unitMs : MINUTE;
 }

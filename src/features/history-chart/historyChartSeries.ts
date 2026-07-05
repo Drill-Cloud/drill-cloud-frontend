@@ -93,7 +93,11 @@ export function createSeriesOptions(points: HistoryPoint[], index: number, label
         color,
       },
       emphasis: {
-        focus: 'series',
+        disabled: true,
+        lineStyle: {
+          width: 1.8,
+          color,
+        },
       },
       z: 3,
     },

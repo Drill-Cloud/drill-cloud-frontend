@@ -89,7 +89,7 @@ export function formatTooltip(params: unknown): string {
     const value = item.value as AvgPointValue;
     return [
       '<div class="chart-tooltip-row">',
-      `<span>${item.marker ?? ''}${item.seriesName ?? ''}</span>`,
+      `<span class="chart-tooltip-label" style="--chart-tooltip-marker-color:${item.color ?? 'currentColor'};">${item.seriesName ?? ''}</span>`,
       '<strong>',
       `min ${formatChartValue(value[2])} · avg ${formatChartValue(value[1])} · max ${formatChartValue(value[3])}`,
       value[4] > 1 ? ` · ${value[4]} точек` : '',

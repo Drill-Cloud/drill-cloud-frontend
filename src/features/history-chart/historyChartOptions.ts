@@ -45,6 +45,9 @@ export function createHistoryChartOptions({
     legend: {
       type: 'scroll',
       top: 0,
+      icon: 'rect',
+      itemWidth: 18,
+      itemHeight: 3,
       data: legendData,
       textStyle: { color: '#cbd5e1' },
     },

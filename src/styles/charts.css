@@ -36,12 +36,22 @@
   margin-top: 5px;
 }
 
-.chart-tooltip-row span {
+.chart-tooltip-label {
   min-width: 0;
   overflow: hidden;
   color: #cbd5e1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.chart-tooltip-label::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: var(--chart-tooltip-marker-color, currentColor);
 }
 
 .chart-tooltip-row strong {

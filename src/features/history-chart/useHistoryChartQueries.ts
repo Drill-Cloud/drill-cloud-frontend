@@ -33,7 +33,7 @@ export function useHistoryChartQueries({
   const queries = useQueries({
     queries: tags.map((tag) => ({
       queryKey: ['history', edge, tag, from, to, granulate],
-      queryFn: () => getHistory({ edge, tag, from, to, granulate }),
+      queryFn: ({ signal }: { signal: AbortSignal }) => getHistory({ edge, tag, from, to, granulate }, signal),
       enabled,
     })),
   });

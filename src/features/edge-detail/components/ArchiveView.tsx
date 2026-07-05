@@ -254,7 +254,7 @@ export function ArchiveView({
 
         {selectedTags.length ? (
           <HistoryChart
-            key={`${range.from}:${range.to}:${selectedTags.join(',')}`}
+            key={`${range.from}:${range.to}:${historyAxis.granulate}`}
             edge={edgeId}
             from={fromIso}
             to={toIso}

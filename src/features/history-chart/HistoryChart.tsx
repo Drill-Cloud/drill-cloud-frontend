@@ -15,6 +15,7 @@ type HistoryChartProps = {
   tickIntervalMs?: number;
   to: string;
   tagLabels?: Record<string, string>;
+  onZoomRangeChange?: (range: HistoryZoomRange) => void;
 };
 
 const ZOOM_REQUEST_DELAY_MS = 350;
@@ -95,6 +96,7 @@ export function HistoryChart({
   tickIntervalMs,
   to,
   tagLabels = {},
+  onZoomRangeChange,
 }: HistoryChartProps) {
   const [zoomRange, setZoomRange] = useState(() =>
     createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to }),
@@ -167,8 +169,9 @@ export function HistoryChart({
     zoomTimerRef.current = setTimeout(() => {
       zoomRangeRef.current = nextRange;
       setZoomRange(nextRange);
+      onZoomRangeChange?.(nextRange);
     }, ZOOM_REQUEST_DELAY_MS);
-  }, []);
+  }, [onZoomRangeChange]);
 
   return (
     <HistoryChartArea

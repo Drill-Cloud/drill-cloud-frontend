@@ -15,7 +15,6 @@ type HistoryChartProps = {
   tickIntervalMs?: number;
   to: string;
   tagLabels?: Record<string, string>;
-  onZoomRangeChange?: (range: HistoryZoomRange) => void;
 };
 
 const ZOOM_REQUEST_DELAY_MS = 350;
@@ -87,6 +86,39 @@ function isSameZoomRange(left: HistoryZoomRange, right: HistoryZoomRange): boole
   return left.from === right.from && left.to === right.to && left.granulate === right.granulate;
 }
 
+/** Вычисляет, какую часть верхнеуровневого периода занимает текущий пользовательский zoom. */
+function createDataZoomState(baseRange: HistoryZoomRange, zoomRange: HistoryZoomRange): DataZoomState {
+  // Верхнеуровневый период берём из инпутов "С/По" и считаем его полными 0..100%.
+  const baseFromMs = new Date(baseRange.from).getTime();
+  const baseToMs = new Date(baseRange.to).getTime();
+
+  // Пользовательский zoom живёт внутри верхнеуровневого периода и должен быть выделен на нижней шкале.
+  const zoomFromMs = new Date(zoomRange.from).getTime();
+  const zoomToMs = new Date(zoomRange.to).getTime();
+  const baseSpanMs = baseToMs - baseFromMs;
+
+  // Если даты некорректны, показываем весь период, чтобы не ломать управление графиком.
+  if (
+    !Number.isFinite(baseFromMs) ||
+    !Number.isFinite(baseToMs) ||
+    !Number.isFinite(zoomFromMs) ||
+    !Number.isFinite(zoomToMs) ||
+    baseSpanMs <= 0
+  ) {
+    return { start: 0, end: 100 };
+  }
+
+  // Переводим абсолютные даты zoom-а в проценты относительно верхнеуровневого периода.
+  const start = ((zoomFromMs - baseFromMs) / baseSpanMs) * 100;
+  const end = ((zoomToMs - baseFromMs) / baseSpanMs) * 100;
+
+  // Ограничиваем значения диапазоном 0..100, чтобы ECharts не получил выход за шкалу.
+  return {
+    start: Math.max(0, Math.min(100, start)),
+    end: Math.max(0, Math.min(100, end)),
+  };
+}
+
 export function HistoryChart({
   edge,
   from,
@@ -96,11 +128,15 @@ export function HistoryChart({
   tickIntervalMs,
   to,
   tagLabels = {},
-  onZoomRangeChange,
 }: HistoryChartProps) {
+  const baseRange = useMemo(
+    () => createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to }),
+    [from, granulate, labelFormat, tickIntervalMs, to],
+  );
   const [zoomRange, setZoomRange] = useState(() =>
     createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to }),
   );
+  const baseRangeRef = useRef(baseRange);
   const zoomRangeRef = useRef(zoomRange);
   const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lines = useHistoryChartQueries({
@@ -116,10 +152,10 @@ export function HistoryChart({
   const loading = lines.some((line) => line.loading);
 
   useEffect(() => {
-    const nextRange = createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to });
-    zoomRangeRef.current = nextRange;
-    setZoomRange(nextRange);
-  }, [from, granulate, labelFormat, tickIntervalMs, to]);
+    baseRangeRef.current = baseRange;
+    zoomRangeRef.current = baseRange;
+    setZoomRange(baseRange);
+  }, [baseRange]);
 
   useEffect(() => {
     zoomRangeRef.current = zoomRange;
@@ -137,15 +173,15 @@ export function HistoryChart({
   const option = useMemo(
     () =>
       createHistoryChartOptions({
-        dataZoomState: { start: 0, end: 100 },
-        from: zoomRange.from,
-        to: zoomRange.to,
+        dataZoomState: createDataZoomState(baseRange, zoomRange),
+        from: baseRange.from,
+        to: baseRange.to,
         labelFormat: zoomRange.labelFormat,
         legendData,
         series,
         tickIntervalMs: zoomRange.tickIntervalMs,
       }),
-    [legendData, series, zoomRange],
+    [baseRange, legendData, series, zoomRange],
   );
 
   const handleDataZoom = useCallback((event: DataZoomEventBatch) => {
@@ -155,8 +191,9 @@ export function HistoryChart({
       return;
     }
 
+    const baseRange = baseRangeRef.current;
     const currentRange = zoomRangeRef.current;
-    const nextRange = getZoomRangeFromEvent(state, currentRange);
+    const nextRange = getZoomRangeFromEvent(state, baseRange);
 
     if (!nextRange || isSameZoomRange(nextRange, currentRange)) {
       return;
@@ -169,9 +206,8 @@ export function HistoryChart({
     zoomTimerRef.current = setTimeout(() => {
       zoomRangeRef.current = nextRange;
       setZoomRange(nextRange);
-      onZoomRangeChange?.(nextRange);
     }, ZOOM_REQUEST_DELAY_MS);
-  }, [onZoomRangeChange]);
+  }, []);
 
   return (
     <HistoryChartArea

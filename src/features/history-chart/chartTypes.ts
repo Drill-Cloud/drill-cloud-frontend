@@ -1,6 +1,16 @@
+import type { HistoryAxisLabelFormat } from '../../utils/historyGranularity';
+
 export type AvgPointValue = [time: number, avg: number, min: number, max: number, count: number];
 
 export type HistoryBucketValue = [...AvgPointValue, slotMs: number];
+
+export type HistoryZoomRange = {
+  from: string;
+  to: string;
+  granulate: string;
+  tickIntervalMs?: number;
+  labelFormat?: HistoryAxisLabelFormat;
+};
 
 export type TooltipParam = {
   color?: string;

@@ -1,3 +1,4 @@
+import mpegts from 'mpegts.js';
 import { useEffect, useRef, useState } from 'react';
 
 type CameraViewProps = {
@@ -11,8 +12,7 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
 
   useEffect(() => {
     const video = videoRef.current;
-    let player: import('mpegts.js').default.Player | null = null;
-    let cancelled = false;
+    let player: ReturnType<typeof mpegts.createPlayer> | null = null;
 
     if (!video) {
       return;
@@ -22,32 +22,27 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
     video.addEventListener('playing', clearError);
     setError(null);
 
-    void import('mpegts.js').then(({ default: mpegts }) => {
-      if (cancelled) {
-        return;
-      }
+    if (!mpegts.isSupported()) {
+      setError('Браузер не поддерживает MPEG-TS поток');
+      return () => {
+        video.removeEventListener('playing', clearError);
+      };
+    }
 
-      if (!mpegts.isSupported()) {
-        setError('Браузер не поддерживает MPEG-TS поток');
-        return;
-      }
+    player = mpegts.createPlayer(
+      { type: 'mpegts', isLive: true, url: wsUrl },
+      { liveBufferLatencyChasing: true, liveBufferLatencyMaxLatency: 1.5 },
+    );
 
-      player = mpegts.createPlayer(
-        { type: 'mpegts', isLive: true, url: wsUrl },
-        { liveBufferLatencyChasing: true, liveBufferLatencyMaxLatency: 1.5 },
-      );
+    player.attachMediaElement(video);
+    player.load();
 
-      player.attachMediaElement(video);
-      player.load();
-
-      const playResult = player.play();
-      if (playResult instanceof Promise) {
-        void playResult.then(() => setError(null)).catch(() => setError('Не удалось запустить воспроизведение'));
-      }
-    });
+    const playResult = player.play();
+    if (playResult instanceof Promise) {
+      void playResult.then(() => setError(null)).catch(() => setError('Не удалось запустить воспроизведение'));
+    }
 
     return () => {
-      cancelled = true;
       video.removeEventListener('playing', clearError);
       player?.pause();
       player?.unload();

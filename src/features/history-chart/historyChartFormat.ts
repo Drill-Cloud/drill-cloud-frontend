@@ -60,6 +60,19 @@ function formatChartValue(value: number): string {
   }).format(value);
 }
 
+/** Показывает одно значение, если min/avg/max визуально совпадают. */
+function formatTooltipValue(value: AvgPointValue): string {
+  const avg = formatChartValue(value[1]);
+  const min = formatChartValue(value[2]);
+  const max = formatChartValue(value[3]);
+
+  if (min === avg && avg === max) {
+    return avg;
+  }
+
+  return `min ${min} · avg ${avg} · max ${max}`;
+}
+
 function isAvgPointValue(value: unknown): value is AvgPointValue {
   return Array.isArray(value) && value.length >= 5 && value.every((item) => typeof item === 'number');
 }
@@ -91,7 +104,7 @@ export function formatTooltip(params: unknown): string {
       '<div class="chart-tooltip-row">',
       `<span class="chart-tooltip-label" style="--chart-tooltip-marker-color:${item.color ?? 'currentColor'};">${item.seriesName ?? ''}</span>`,
       '<strong>',
-      `min ${formatChartValue(value[2])} · avg ${formatChartValue(value[1])} · max ${formatChartValue(value[3])}`,
+      formatTooltipValue(value),
       value[4] > 1 ? ` · ${value[4]} точек` : '',
       '</strong>',
       '</div>',

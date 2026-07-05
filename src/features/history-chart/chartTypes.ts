@@ -8,6 +8,8 @@ export type TooltipParam = {
 };
 
 export type DataZoomState = {
+  dataZoomId?: string;
+  dataZoomIndex?: number;
   start?: number;
   end?: number;
   startValue?: number;

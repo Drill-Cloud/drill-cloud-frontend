@@ -54,7 +54,7 @@ export function createHistoryChartOptions({
     grid: {
       top: 54,
       left: 48,
-      right: 24,
+      right: 56,
       bottom: 72,
     },
     xAxis: {
@@ -79,7 +79,9 @@ export function createHistoryChartOptions({
     },
     dataZoom: [
       {
+        id: 'history-x-inside',
         type: 'inside',
+        xAxisIndex: 0,
         throttle: 80,
         start: dataZoomState.start,
         end: dataZoomState.end,
@@ -87,7 +89,9 @@ export function createHistoryChartOptions({
         endValue: dataZoomState.endValue,
       },
       {
+        id: 'history-x-slider',
         type: 'slider',
+        xAxisIndex: 0,
         bottom: 18,
         height: 28,
         borderColor: 'rgba(148, 163, 184, 0.24)',
@@ -101,6 +105,28 @@ export function createHistoryChartOptions({
         end: dataZoomState.end,
         startValue: dataZoomState.startValue,
         endValue: dataZoomState.endValue,
+      },
+      {
+        id: 'history-y-inside',
+        type: 'inside',
+        yAxisIndex: 0,
+        filterMode: 'none',
+        throttle: 80,
+      },
+      {
+        id: 'history-y-slider',
+        type: 'slider',
+        yAxisIndex: 0,
+        filterMode: 'none',
+        right: 8,
+        width: 12,
+        borderColor: 'rgba(148, 163, 184, 0.24)',
+        fillerColor: 'rgba(91, 143, 249, 0.18)',
+        handleStyle: {
+          color: '#d4a574',
+          borderColor: '#e8c9a0',
+        },
+        textStyle: { color: '#94a3b8' },
       },
     ],
     series,

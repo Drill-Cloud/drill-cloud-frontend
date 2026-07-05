@@ -39,6 +39,7 @@ export function EdgeDetailPage() {
         latestUpdatedAt={latestUpdatedAt}
         onOpenArchive={() => navigate(`${edgePath}/archive`)}
         onOpenIndicators={() => navigate(`${edgePath}/indicators`)}
+        onOpenVideo={() => navigate(`${edgePath}/video`)}
       />
     </EdgePageLayout>
   );

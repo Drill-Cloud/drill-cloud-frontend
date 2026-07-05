@@ -1,4 +1,4 @@
-import { Activity, BarChart3, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Video } from 'lucide-react';
 import { formatDateTime } from '../../../utils/format';
 
 type OverviewViewProps = {
@@ -8,6 +8,7 @@ type OverviewViewProps = {
   totalTags: number;
   onOpenArchive: () => void;
   onOpenIndicators: () => void;
+  onOpenVideo: () => void;
 };
 
 export function OverviewView({
@@ -17,6 +18,7 @@ export function OverviewView({
   totalTags,
   onOpenArchive,
   onOpenIndicators,
+  onOpenVideo
 }: OverviewViewProps) {
   return (
     <section className="detail-overview">
@@ -53,9 +55,9 @@ export function OverviewView({
             <BarChart3 size={18} />
             Архив и график
           </button>
-          <button type="button">
-            <CalendarClock size={18} />
-            Техническое обслуживание
+          <button type="button" onClick={onOpenVideo}>
+            <Video size={18} />
+            Видео
           </button>
         </div>
       </section>

@@ -6,6 +6,21 @@ type CameraViewProps = {
   wsUrl: string;
 };
 
+const CAMERA_PLAYER_CONFIG = {
+  enableWorker: true,
+  enableStashBuffer: true,
+  stashInitialSize: 512,
+  autoCleanupSourceBuffer: true,
+  autoCleanupMaxBackwardDuration: 10,
+  autoCleanupMinBackwardDuration: 5,
+  liveBufferLatencyChasing: true,
+  liveBufferLatencyMaxLatency: 5.0,
+  liveBufferLatencyMinRemain: 2.0,
+  liveSync: false,
+  lazyLoad: false,
+  deferLoadAfterSourceOpen: false,
+};
+
 export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -13,6 +28,7 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
   useEffect(() => {
     const video = videoRef.current;
     let player: ReturnType<typeof mpegts.createPlayer> | null = null;
+    const handlePlayerError = () => setError('Ошибка видеопотока');
 
     if (!video) {
       return;
@@ -30,20 +46,22 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
     }
 
     player = mpegts.createPlayer(
-      { type: 'mpegts', isLive: true, url: wsUrl },
-      { liveBufferLatencyChasing: true, liveBufferLatencyMaxLatency: 1.5 },
+      { type: 'mpegts', isLive: true, url: wsUrl, hasAudio: false },
+      CAMERA_PLAYER_CONFIG,
     );
 
+    player.on(mpegts.Events.ERROR, handlePlayerError);
     player.attachMediaElement(video);
     player.load();
 
     const playResult = player.play();
     if (playResult instanceof Promise) {
-      void playResult.then(() => setError(null)).catch(() => setError('Не удалось запустить воспроизведение'));
+      void playResult.then(() => setError(null)).catch(() => undefined);
     }
 
     return () => {
       video.removeEventListener('playing', clearError);
+      player?.off(mpegts.Events.ERROR, handlePlayerError);
       player?.pause();
       player?.unload();
       player?.detachMediaElement();

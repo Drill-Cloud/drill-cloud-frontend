@@ -1,8 +1,8 @@
 import type { HistoryAxisLabelFormat } from '../../utils/historyGranularity';
 
-export type AvgPointValue = [time: number, avg: number, min: number, max: number, count: number];
+export type AvgPointValue = [time: number, avg: number, min: number, max: number, count: number, slotMs?: number];
 
-export type HistoryBucketValue = [...AvgPointValue, slotMs: number];
+export type HistoryBucketValue = [time: number, avg: number, min: number, max: number, count: number, slotMs: number];
 
 export type HistoryZoomRange = {
   from: string;

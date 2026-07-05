@@ -27,6 +27,22 @@ type CartesianCoordSys = {
   height: number;
 };
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function createAvgGradientStops(color: string, avgOffset: number) {
+  const softZone = 0.18;
+
+  return [
+    { offset: 0, color: `${color}00` },
+    { offset: clamp(avgOffset - softZone, 0, 1), color: `${color}22` },
+    { offset: avgOffset, color: `${color}70` },
+    { offset: clamp(avgOffset + softZone, 0, 1), color: `${color}22` },
+    { offset: 1, color: `${color}00` },
+  ].sort((first, second) => first.offset - second.offset);
+}
+
 function isFinitePoint(point: HistoryPoint): boolean {
   return [point.avg_value, point.min_value, point.max_value].every(Number.isFinite);
 }
@@ -86,6 +102,8 @@ function renderBucket(color: string) {
       return null;
     }
 
+    const avgOffset = clamp((avgY - rangeShape.y) / rangeShape.height, 0, 1);
+
     return {
       type: 'group',
       children: [
@@ -93,11 +111,7 @@ function renderBucket(color: string) {
           type: 'rect',
           shape: rangeShape,
           style: {
-            fill: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: `${color}00` },
-              { offset: 0.5, color: `${color}66` },
-              { offset: 1, color: `${color}00` },
-            ]),
+            fill: new graphic.LinearGradient(0, 0, 0, 1, createAvgGradientStops(color, avgOffset)),
           },
         },
         ...(avgShape ? [{

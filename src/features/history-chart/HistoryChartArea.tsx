@@ -1,6 +1,7 @@
 import type { EChartsOption } from 'echarts';
 import ReactEChartsCore from 'echarts-for-react/esm/core.js';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import type { WheelEvent } from 'react';
 import type { DataZoomEventBatch } from './chartTypes';
 import { echarts } from './historyChartEcharts';
 
@@ -12,6 +13,21 @@ type HistoryChartAreaProps = {
   onDataZoom: (event: DataZoomEventBatch) => void;
 };
 
+/** Включает или выключает нативный X-зум колесом, чтобы Shift + колесо работал только по Y. */
+function setXAxisWheelZoom(chart: ReturnType<ReactEChartsCore['getEchartsInstance']>, enabled: boolean): void {
+  chart.setOption(
+    {
+      dataZoom: [
+        {
+          id: 'history-x-inside',
+          zoomOnMouseWheel: enabled,
+        },
+      ],
+    },
+    { lazyUpdate: true },
+  );
+}
+
 /** Отвечает только за визуальную область графика: placeholder или ECharts canvas. */
 export function HistoryChartArea({
   hasData,
@@ -20,11 +36,54 @@ export function HistoryChartArea({
   option,
   onDataZoom,
 }: HistoryChartAreaProps) {
+  const chartRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
+  const xWheelZoomEnabledRef = useRef(true);
   const onChartEvents = useMemo(
     () => ({
       datazoom: onDataZoom,
     }),
     [onDataZoom],
+  );
+  const updateXAxisWheelZoom = useCallback((enabled: boolean) => {
+    const chart = chartRef.current?.getEchartsInstance();
+
+    if (!chart || xWheelZoomEnabledRef.current === enabled) {
+      return;
+    }
+
+    xWheelZoomEnabledRef.current = enabled;
+    setXAxisWheelZoom(chart, enabled);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        updateXAxisWheelZoom(false);
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        updateXAxisWheelZoom(true);
+      }
+    };
+    const handleBlur = () => updateXAxisWheelZoom(true);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [updateXAxisWheelZoom]);
+
+  const handleWheelCapture = useCallback(
+    (event: WheelEvent<HTMLDivElement>) => {
+      updateXAxisWheelZoom(!event.shiftKey);
+    },
+    [updateXAxisWheelZoom],
   );
 
   if (!hasSelection) {
@@ -39,5 +98,16 @@ export function HistoryChartArea({
     return <div className="chart-placeholder">Нет данных для выбранного диапазона</div>;
   }
 
-  return <ReactEChartsCore echarts={echarts} option={option} className="history-chart" onEvents={onChartEvents} lazyUpdate />;
+  return (
+    <div className="history-chart-shell" onWheelCapture={handleWheelCapture}>
+      <ReactEChartsCore
+        ref={chartRef}
+        echarts={echarts}
+        option={option}
+        className="history-chart"
+        onEvents={onChartEvents}
+        lazyUpdate
+      />
+    </div>
+  );
 }

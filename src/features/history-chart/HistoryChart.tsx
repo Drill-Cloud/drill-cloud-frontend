@@ -34,7 +34,7 @@ export function HistoryChart({
 }: HistoryChartProps) {
   const dataZoomRef = useRef<DataZoomState | null>(null);
   const lines = useHistoryChartQueries({ edge, from, granulate, tags, to, tagLabels });
-  const series = useHistoryChartSeries(lines);
+  const series = useHistoryChartSeries(lines, granulate);
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);
 

@@ -1,5 +1,7 @@
 export type AvgPointValue = [time: number, avg: number, min: number, max: number, count: number];
 
+export type HistoryBucketValue = [...AvgPointValue, slotMs: number];
+
 export type TooltipParam = {
   color?: string;
   marker?: string;

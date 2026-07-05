@@ -1,8 +1,14 @@
+.history-chart-shell,
 .history-chart {
   width: 100%;
   height: 440px;
 }
 
+.history-chart-shell .history-chart {
+  height: 100%;
+}
+
+.chart-section--archive .history-chart-shell,
 .chart-section--archive .history-chart {
   flex: 1;
   min-height: 520px;
@@ -67,6 +73,7 @@
 }
 
 @media (max-width: 680px) {
+  .chart-section--archive .history-chart-shell,
   .chart-section--archive .history-chart,
   .chart-section--archive .chart-placeholder {
     min-height: 420px;

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { getHistory } from '../../entities/history/api';
 import type { HistoryPoint } from '../../entities/history/types';
 
@@ -35,6 +35,7 @@ export function useHistoryChartQueries({
       queryKey: ['history', edge, tag, from, to, granulate],
       queryFn: ({ signal }: { signal: AbortSignal }) => getHistory({ edge, tag, from, to, granulate }, signal),
       enabled,
+      placeholderData: keepPreviousData,
     })),
   });
 

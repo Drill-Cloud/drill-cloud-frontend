@@ -4,9 +4,8 @@ import { useRef } from 'react';
 import { CalendarDays, CalendarClock, Check, ChevronDown, Clock3, DatabaseZap, Search } from 'lucide-react';
 import type { CurrentItem } from '../../../entities/current/types';
 import { HistoryChart } from '../../../features/history-chart/HistoryChart';
-import type { HistoryZoomRange } from '../../../features/history-chart/chartTypes';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../../../features/history/dateRange';
-import { toInputDateTimeValue, toIsoFromInput } from '../../../utils/format';
+import { toIsoFromInput } from '../../../utils/format';
 import type { HistoryGranularity } from '../../../utils/historyGranularity';
 
 type ArchiveViewProps = {
@@ -107,12 +106,6 @@ export function ArchiveView({
     onRangeChange({
       ...range,
       [rangePart]: updateRangeInputPart(range[rangePart], inputPart, value),
-    });
-  };
-  const updateRangeFromZoom = (nextRange: HistoryZoomRange) => {
-    onRangeChange({
-      from: toInputDateTimeValue(new Date(nextRange.from)),
-      to: toInputDateTimeValue(new Date(nextRange.to)),
     });
   };
 
@@ -270,7 +263,6 @@ export function ArchiveView({
             labelFormat={historyAxis.labelFormat}
             tags={selectedTags}
             tagLabels={tagLabels}
-            onZoomRangeChange={updateRangeFromZoom}
           />
         ) : (
           <div className="chart-placeholder">Разверните список показателей и выберите серию для графика</div>

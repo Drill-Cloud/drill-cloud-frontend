@@ -82,6 +82,8 @@ export function createHistoryChartOptions({
         id: 'history-x-inside',
         type: 'inside',
         xAxisIndex: 0,
+        zoomOnMouseWheel: true,
+        moveOnMouseWheel: false,
         throttle: 80,
         start: dataZoomState.start,
         end: dataZoomState.end,
@@ -111,6 +113,8 @@ export function createHistoryChartOptions({
         type: 'inside',
         yAxisIndex: 0,
         filterMode: 'none',
+        zoomOnMouseWheel: 'shift',
+        moveOnMouseWheel: false,
         throttle: 80,
       },
       {

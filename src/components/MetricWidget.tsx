@@ -6,12 +6,17 @@ type MetricWidgetProps = {
 };
 
 export function MetricWidget({ item }: MetricWidgetProps) {
-  const title = item.name?.trim() || item.tag;
+  const name = item.name?.trim() || item.tag;
+  const unit = item.unitOfMeasurement?.trim();
 
   return (
-    <article className="metric-widget" title={`${title} (${item.tag})`}>
-      <span className="metric-widget__tag">{title}</span>
-      <strong className="metric-widget__value">{formatNumber(item.value)}</strong>
+    <article className="metric-widget" title={`${name} (${item.tag})`}>
+      <span className="metric-widget__id">{item.tag}</span>
+      <span className="metric-widget__name">{name}</span>
+      <span className="metric-widget__reading">
+        <strong className="metric-widget__value">{formatNumber(item.value)}</strong>
+        {unit ? <span className="metric-widget__unit">{unit}</span> : null}
+      </span>
     </article>
   );
 }

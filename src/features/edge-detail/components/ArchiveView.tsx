@@ -5,7 +5,7 @@ import { CalendarDays, CalendarClock, Check, ChevronDown, Clock3, DatabaseZap, S
 import type { CurrentItem } from '../../../entities/current/types';
 import { HistoryChart } from '../../../features/history-chart/HistoryChart';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../../../features/history/dateRange';
-import { toIsoFromInput } from '../../../utils/format';
+import { formatNumber, toIsoFromInput } from '../../../utils/format';
 import type { HistoryGranularity } from '../../../utils/historyGranularity';
 
 type ArchiveViewProps = {
@@ -191,7 +191,7 @@ export function ArchiveView({
                       {label !== item.tag ? <small>{item.tag}</small> : null}
                     </span>
                     <span className="tag-select-item__side">
-                      <strong>{item.value.toLocaleString('ru-RU', { maximumFractionDigits: item.precision ?? 3 })}</strong>
+                      <strong>{formatNumber(item.value)}</strong>
                       {selected ? <Check size={15} /> : null}
                     </span>
                   </button>

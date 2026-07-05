@@ -1,7 +1,7 @@
 /** Форматирует числовое значение показателя для карточек и мини-плиток. */
-export function formatNumber(value: number): string {
-  if (!Number.isFinite(value)) {
-    return '-';
+export function formatNumber(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) {
+    return '—';
   }
 
   return new Intl.NumberFormat('ru-RU', {

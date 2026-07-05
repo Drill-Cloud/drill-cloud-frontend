@@ -60,7 +60,7 @@ function formatChartValue(value: number): string {
   }).format(value);
 }
 
-/** Показывает одно значение, если min/avg/max визуально совпадают. */
+/** Форматирует значение tooltip: одно число для min=avg=max или среднее с диапазоном. */
 function formatTooltipValue(value: AvgPointValue): string {
   const avg = formatChartValue(value[1]);
   const min = formatChartValue(value[2]);
@@ -70,7 +70,7 @@ function formatTooltipValue(value: AvgPointValue): string {
     return avg;
   }
 
-  return `min ${min} · avg ${avg} · max ${max}`;
+  return `сред. ${avg} (${min} .. ${max})`;
 }
 
 function isAvgPointValue(value: unknown): value is AvgPointValue {

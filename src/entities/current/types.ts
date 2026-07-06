@@ -1,7 +1,7 @@
 export type CurrentItem = {
   edge: string;
   tag: string;
-  value: number;
+  value: number | null;
   createdAt: string;
   updatedAt: string;
   time: string;

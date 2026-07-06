@@ -16,8 +16,9 @@ function isConfiguredLimit(value: number | null): value is number {
 export function getMetricStatus(item: CurrentItem, now = Date.now()): MetricStatusInfo {
   const measuredAt = new Date(item.time).getTime();
   const ageSeconds = Number.isFinite(measuredAt) ? Math.max(0, Math.round((now - measuredAt) / 1000)) : Number.POSITIVE_INFINITY;
-  const belowMin = isConfiguredLimit(item.min) && item.value < item.min;
-  const aboveMax = isConfiguredLimit(item.max) && item.value > item.max;
+  const value = item.value;
+  const belowMin = isConfiguredLimit(value) && isConfiguredLimit(item.min) && value < item.min;
+  const aboveMax = isConfiguredLimit(value) && isConfiguredLimit(item.max) && value > item.max;
 
   if (belowMin || aboveMax) {
     return { status: 'critical', label: 'за пределами уставки', ageSeconds };

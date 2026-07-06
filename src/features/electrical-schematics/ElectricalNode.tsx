@@ -29,8 +29,8 @@ export function ElectricalNode({ liveValues, node, ownerEdgeId }: ElectricalNode
       ? getLiveValue(liveValues, node.edgeId || ownerEdgeId, node.tagId)
       : getLiveValue(liveValues, bindingEdgeId, bindings?.stateTagId);
   const alarmValue = node.kind === 'decoration' ? getLiveValue(liveValues, bindingEdgeId, bindings?.alarmTagId) : undefined;
-  const alarmActive = Boolean(alarmValue && Number(alarmValue.value) !== 0);
-  const stateActive = Boolean(mainValue && Number(mainValue.value) !== 0);
+  const alarmActive = Boolean(alarmValue && alarmValue.value !== null && alarmValue.value !== 0);
+  const stateActive = Boolean(mainValue && mainValue.value !== null && mainValue.value !== 0);
   const title = getNodeTitle(node, mainValue);
   const style: CSSProperties = {
     left: node.position.x,

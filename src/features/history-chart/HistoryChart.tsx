@@ -28,8 +28,8 @@ type HistoryChartProps = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Определяет видимость соединительной avg-линии с учетом ручного режима и текущей грануляции. */
-function shouldShowAvgLine(mode: AvgLineMode, granulate: string): boolean {
+/** Определяет видимость соединительной avg-линии с учетом ручного режима и масштаба X-шкалы. */
+function shouldShowAvgLine(mode: AvgLineMode, range: HistoryZoomRange): boolean {
   if (mode === 'show') {
     return true;
   }
@@ -38,7 +38,7 @@ function shouldShowAvgLine(mode: AvgLineMode, granulate: string): boolean {
     return false;
   }
 
-  return parseGranulateMs(granulate) < DAY_MS;
+  return (range.tickIntervalMs ?? parseGranulateMs(range.granulate)) < DAY_MS;
 }
 
 export function HistoryChart({
@@ -71,7 +71,7 @@ export function HistoryChart({
     to: zoomRange.to,
     tagLabels,
   });
-  const showAvgLine = shouldShowAvgLine(avgLineMode, zoomRange.granulate);
+  const showAvgLine = shouldShowAvgLine(avgLineMode, zoomRange);
   const series = useHistoryChartSeries(lines, zoomRange.granulate, showAvgLine);
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);

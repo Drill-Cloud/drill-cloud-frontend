@@ -8,6 +8,38 @@
   height: 100%;
 }
 
+.history-chart-shell {
+  position: relative;
+}
+
+.history-chart-controls {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-chart-line-mode {
+  padding: 3px;
+}
+
+.history-chart-line-mode button {
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.history-chart-line-mode__button--active {
+  color: #f8fafc;
+  background: rgba(212, 165, 116, 0.16);
+  border-color: rgba(212, 165, 116, 0.38);
+}
+
 .chart-section--archive .history-chart-shell,
 .chart-section--archive .history-chart {
   flex: 1;

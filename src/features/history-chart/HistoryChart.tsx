@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EChartsOption } from 'echarts';
-import { getHistoryGranularity, type HistoryAxisLabelFormat } from '../../utils/historyGranularity';
-import type { DataZoomEventBatch, DataZoomState, HistoryZoomRange } from './chartTypes';
+import { parseGranulateMs, type HistoryAxisLabelFormat } from '../../utils/historyGranularity';
+import type { AvgLineMode, DataZoomEventBatch, HistoryZoomRange } from './chartTypes';
 import { HistoryChartArea } from './HistoryChartArea';
 import { createHistoryChartOptions } from './historyChartOptions';
+import {
+  createDataZoomState,
+  createInitialZoomRange,
+  getZoomRangeFromEvent,
+  isSameZoomRange,
+  isXAxisDataZoom,
+  ZOOM_REQUEST_DELAY_MS,
+} from './historyChartZoom';
 import { useHistoryChartQueries } from './useHistoryChartQueries';
 import { useHistoryChartSeries } from './useHistoryChartSeries';
 
@@ -18,106 +26,19 @@ type HistoryChartProps = {
   tagLabels?: Record<string, string>;
 };
 
-const ZOOM_REQUEST_DELAY_MS = 350;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-function isXAxisDataZoom(state: DataZoomState): boolean {
-  return state.dataZoomId?.startsWith('history-x-') || state.dataZoomIndex === 0 || state.dataZoomIndex === 1;
-}
-
-/** Собирает начальный zoom-диапазон из внешних props графика. */
-function createInitialZoomRange({
-  from,
-  granulate,
-  labelFormat,
-  tickIntervalMs,
-  to,
-}: Pick<HistoryChartProps, 'from' | 'granulate' | 'labelFormat' | 'tickIntervalMs' | 'to'>): HistoryZoomRange {
-  return { from, to, granulate, labelFormat, tickIntervalMs };
-}
-
-/** Создает zoom-диапазон из миллисекунд и подбирает для него грануляцию. */
-function createZoomRange(fromMs: number, toMs: number): HistoryZoomRange {
-  const from = new Date(fromMs).toISOString();
-  const to = new Date(toMs).toISOString();
-
-  return {
-    from,
-    to,
-    ...getHistoryGranularity(from, to),
-  };
-}
-
-/** Достает подинтервал X-зума из события ECharts. */
-function getZoomRangeFromEvent(state: DataZoomState, baseRange: HistoryZoomRange): HistoryZoomRange | null {
-  const baseFromMs = new Date(baseRange.from).getTime();
-  const baseToMs = new Date(baseRange.to).getTime();
-  const baseSpanMs = baseToMs - baseFromMs;
-
-  if (!Number.isFinite(baseFromMs) || !Number.isFinite(baseToMs) || baseSpanMs <= 0) {
-    return null;
+/** Определяет видимость соединительной avg-линии с учетом ручного режима и текущей грануляции. */
+function shouldShowAvgLine(mode: AvgLineMode, granulate: string): boolean {
+  if (mode === 'show') {
+    return true;
   }
 
-  const startValue = Number(state.startValue);
-  const endValue = Number(state.endValue);
-  let nextFromMs = Number.isFinite(startValue) ? startValue : undefined;
-  let nextToMs = Number.isFinite(endValue) ? endValue : undefined;
-  
-  // ECharts иногда не передает startValue/endValue, поэтому используем start/end.
-  if (nextFromMs === undefined || nextToMs === undefined) {
-    const start = Number(state.start);
-    const end = Number(state.end);
-
-    if (!Number.isFinite(start) || !Number.isFinite(end)) {
-      return null;
-    }
-
-    nextFromMs = baseFromMs + (baseSpanMs * start) / 100;
-    nextToMs = baseFromMs + (baseSpanMs * end) / 100;
+  if (mode === 'hide') {
+    return false;
   }
 
-  // Проверка на выход из диапазона 
-  const fromMs = Math.max(baseFromMs, Math.min(nextFromMs, nextToMs));
-  const toMs = Math.min(baseToMs, Math.max(nextFromMs, nextToMs));
-
-  return toMs > fromMs ? createZoomRange(fromMs, toMs) : null;
-}
-
-/** Проверяет, что lazy zoom не пытается повторно применить тот же диапазон. */
-function isSameZoomRange(left: HistoryZoomRange, right: HistoryZoomRange): boolean {
-  return left.from === right.from && left.to === right.to && left.granulate === right.granulate;
-}
-
-/** Вычисляет, какую часть верхнеуровневого периода занимает текущий пользовательский zoom. */
-function createDataZoomState(baseRange: HistoryZoomRange, zoomRange: HistoryZoomRange): DataZoomState {
-  // Верхнеуровневый период берём из инпутов "С/По" и считаем его полными 0..100%.
-  const baseFromMs = new Date(baseRange.from).getTime();
-  const baseToMs = new Date(baseRange.to).getTime();
-
-  // Пользовательский zoom живёт внутри верхнеуровневого периода и должен быть выделен на нижней шкале.
-  const zoomFromMs = new Date(zoomRange.from).getTime();
-  const zoomToMs = new Date(zoomRange.to).getTime();
-  const baseSpanMs = baseToMs - baseFromMs;
-
-  // Если даты некорректны, показываем весь период, чтобы не ломать управление графиком.
-  if (
-    !Number.isFinite(baseFromMs) ||
-    !Number.isFinite(baseToMs) ||
-    !Number.isFinite(zoomFromMs) ||
-    !Number.isFinite(zoomToMs) ||
-    baseSpanMs <= 0
-  ) {
-    return { start: 0, end: 100 };
-  }
-
-  // Переводим абсолютные даты zoom-а в проценты относительно верхнеуровневого периода.
-  const start = ((zoomFromMs - baseFromMs) / baseSpanMs) * 100;
-  const end = ((zoomToMs - baseFromMs) / baseSpanMs) * 100;
-
-  // Ограничиваем значения диапазоном 0..100, чтобы ECharts не получил выход за шкалу.
-  return {
-    start: Math.max(0, Math.min(100, start)),
-    end: Math.max(0, Math.min(100, end)),
-  };
+  return parseGranulateMs(granulate) < DAY_MS;
 }
 
 export function HistoryChart({
@@ -141,6 +62,7 @@ export function HistoryChart({
   const zoomRangeRef = useRef(zoomRange);
   const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastReadyOptionRef = useRef<EChartsOption | null>(null);
+  const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
   const lines = useHistoryChartQueries({
     edge,
     from: zoomRange.from,
@@ -149,7 +71,8 @@ export function HistoryChart({
     to: zoomRange.to,
     tagLabels,
   });
-  const series = useHistoryChartSeries(lines, zoomRange.granulate);
+  const showAvgLine = shouldShowAvgLine(avgLineMode, zoomRange.granulate);
+  const series = useHistoryChartSeries(lines, zoomRange.granulate, showAvgLine);
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);
   const hasData = series.length > 0;
@@ -229,8 +152,10 @@ export function HistoryChart({
       hasData={displayHasData}
       hasSelection={tags.length > 0}
       loading={loading}
+      avgLineMode={avgLineMode}
       option={displayOption}
       onDataZoom={handleDataZoom}
+      onAvgLineModeChange={setAvgLineMode}
     />
   );
 }

@@ -3,12 +3,16 @@ import type { SeriesOption } from 'echarts';
 import { createSeriesOptions } from './historyChartSeries';
 import type { HistoryChartLineData } from './useHistoryChartQueries';
 
-export function useHistoryChartSeries(lines: HistoryChartLineData[], granulate: string): SeriesOption[] {
+export function useHistoryChartSeries(
+  lines: HistoryChartLineData[],
+  granulate: string,
+  showAvgLine: boolean,
+): SeriesOption[] {
   return useMemo(
     () =>
       lines.flatMap((line) =>
-        line.rows.length ? createSeriesOptions(line.rows, line.index, line.label, granulate) : [],
+        line.rows.length ? createSeriesOptions(line.rows, line.index, line.label, granulate, showAvgLine) : [],
       ),
-    [granulate, lines],
+    [granulate, lines, showAvgLine],
   );
 }

@@ -1,4 +1,4 @@
-import { CustomChart } from 'echarts/charts';
+import { CustomChart, LineChart } from 'echarts/charts';
 import {
   DataZoomComponent,
   GridComponent,
@@ -10,6 +10,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 echarts.use([
   CustomChart,
+  LineChart,
   GridComponent,
   LegendComponent,
   TooltipComponent,

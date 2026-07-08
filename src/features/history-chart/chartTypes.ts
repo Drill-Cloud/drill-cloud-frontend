@@ -9,8 +9,6 @@ export type HistoryBucketValue = [
   max: number,
   count: number,
   slotMs: number,
-  previousTime: number | null,
-  previousAvg: number | null,
 ];
 
 export type AvgLineMode = 'auto' | 'show' | 'hide';

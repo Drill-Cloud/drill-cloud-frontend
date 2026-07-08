@@ -72,7 +72,7 @@ export function HistoryChart({
     tagLabels,
   });
   const showAvgLine = shouldShowAvgLine(avgLineMode, zoomRange);
-  const series = useHistoryChartSeries(lines, zoomRange.granulate, showAvgLine);
+  const series = useHistoryChartSeries(lines, zoomRange.granulate, avgLineMode, showAvgLine);
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);
   const hasData = series.length > 0;

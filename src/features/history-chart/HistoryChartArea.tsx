@@ -128,6 +128,7 @@ export function HistoryChartArea({
         </div>
       </div>
       <ReactEChartsCore
+        key={avgLineMode}
         ref={chartRef}
         echarts={echarts}
         option={option}

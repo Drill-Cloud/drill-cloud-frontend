@@ -4,6 +4,8 @@ import { useRef } from 'react';
 import { CalendarDays, CalendarClock, Check, ChevronDown, Clock3, DatabaseZap, Search } from 'lucide-react';
 import type { CurrentItem } from '../../../entities/current/types';
 import { HistoryChart } from '../../../features/history-chart/HistoryChart';
+import { HistoryChartAvgLineModeControl } from '../../../features/history-chart/HistoryChartAvgLineModeControl';
+import type { AvgLineMode } from '../../../features/history-chart/chartTypes';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../../../features/history/dateRange';
 import { formatNumber, toIsoFromInput } from '../../../utils/format';
 import type { HistoryGranularity } from '../../../utils/historyGranularity';
@@ -93,6 +95,7 @@ export function ArchiveView({
   onSelectVisibleTags,
   onToggleTag,
 }: ArchiveViewProps) {
+  const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
   const [selectorOpen, setSelectorOpen] = useState(false);
   const selectedPreview = selectedTags.slice(0, 10);
   const hiddenSelectedCount = Math.max(0, selectedTags.length - selectedPreview.length);
@@ -209,7 +212,7 @@ export function ArchiveView({
         onPointerEnter={() => setSelectorOpen(false)}
       >
         <div className="toolbar">
-          <div className="segmented">
+          <div className="segmented segmented--range-preset">
             {RANGE_PRESETS.map((preset) => (
               <button key={preset.id} type="button" onClick={() => onRangeChange(createRange(preset.hours))}>
                 {preset.label}
@@ -250,11 +253,13 @@ export function ArchiveView({
               onChange={(value) => updateRangePart('to', 'time', value)}
             />
           </div>
+          <HistoryChartAvgLineModeControl value={avgLineMode} onChange={setAvgLineMode} />
         </div>
 
         {selectedTags.length ? (
           <HistoryChart
-            key={`${range.from}:${range.to}:${historyAxis.granulate}`}
+            key={`${range.from}:${range.to}:${historyAxis.granulate}:${historyAxis.tickIntervalMs ?? ''}`}
+            avgLineMode={avgLineMode}
             edge={edgeId}
             from={fromIso}
             to={toIso}

@@ -16,6 +16,7 @@ import { useHistoryChartQueries } from './useHistoryChartQueries';
 import { useHistoryChartSeries } from './useHistoryChartSeries';
 
 type HistoryChartProps = {
+  avgLineMode: AvgLineMode;
   edge: string;
   from: string;
   granulate: string;
@@ -42,6 +43,7 @@ function shouldShowAvgLine(mode: AvgLineMode, range: HistoryZoomRange): boolean 
 }
 
 export function HistoryChart({
+  avgLineMode,
   edge,
   from,
   granulate,
@@ -62,7 +64,6 @@ export function HistoryChart({
   const zoomRangeRef = useRef(zoomRange);
   const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastReadyOptionRef = useRef<EChartsOption | null>(null);
-  const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
   const lines = useHistoryChartQueries({
     edge,
     from: zoomRange.from,
@@ -149,13 +150,12 @@ export function HistoryChart({
 
   return (
     <HistoryChartArea
+      avgLineMode={avgLineMode}
       hasData={displayHasData}
       hasSelection={tags.length > 0}
       loading={loading}
-      avgLineMode={avgLineMode}
       option={displayOption}
       onDataZoom={handleDataZoom}
-      onAvgLineModeChange={setAvgLineMode}
     />
   );
 }

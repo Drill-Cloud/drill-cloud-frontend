@@ -216,6 +216,14 @@
   font-size: 0.84rem;
 }
 
+.archive-avgline-mode-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
 .archive-date-input {
   color-scheme: dark;
   min-height: 36px;

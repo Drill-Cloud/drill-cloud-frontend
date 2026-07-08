@@ -41,7 +41,7 @@ function createAvgLineData(points: HistoryPoint[], granulate: string, breakOnGap
     }
 
     const previousTime = new Date(finitePoints[index - 1].time).getTime();
-    const hasAcceptableGap = currentTime - previousTime <= slotMs * 100;
+    const hasAcceptableGap = currentTime - previousTime <= slotMs * 24;
 
     return hasAcceptableGap ? [currentPoint] : [null, currentPoint];
   });

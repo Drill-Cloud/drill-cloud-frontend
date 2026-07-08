@@ -8,6 +8,58 @@
   height: 100%;
 }
 
+.history-chart-shell {
+  position: relative;
+}
+
+.history-chart-controls {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-chart-line-mode {
+  padding: 3px;
+}
+
+.archive-avgline-mode-control .history-chart-line-mode button {
+  border-radius: 0;
+}
+
+.archive-avgline-mode-control .history-chart-line-mode button:first-child {
+  border-top-left-radius: var(--radius);
+  border-bottom-left-radius: var(--radius);
+}
+
+.archive-avgline-mode-control .history-chart-line-mode button:last-child {
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.segmented--range-preset button {
+  border-radius: 0;
+}
+
+.segmented--range-preset button:first-child {
+  border-top-left-radius: var(--radius);
+  border-bottom-left-radius: var(--radius);
+}
+
+.segmented--range-preset button:last-child {
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.history-chart-line-mode button {
+  font-size: inherit;
+}
+
 .chart-section--archive .history-chart-shell,
 .chart-section--archive .history-chart {
   flex: 1;
@@ -24,10 +76,6 @@
   border-radius: var(--radius);
 }
 
-.chart-tooltip {
-  min-width: 240px;
-}
-
 .chart-tooltip-title {
   margin-bottom: 8px;
   color: #e5e7eb;
@@ -36,7 +84,7 @@
 
 .chart-tooltip-row {
   display: grid;
-  grid-template-columns: minmax(90px, 1fr) auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 14px;
   margin-top: 5px;

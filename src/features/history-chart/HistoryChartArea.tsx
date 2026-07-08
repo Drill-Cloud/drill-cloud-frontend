@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { WheelEvent } from 'react';
 import type { DataZoomEventBatch } from './chartTypes';
 import { echarts } from './historyChartEcharts';
+import type { AvgLineMode } from './chartTypes';
 
 type HistoryChartAreaProps = {
+  avgLineMode: AvgLineMode;
   hasData: boolean;
   hasSelection: boolean;
   loading: boolean;
@@ -30,6 +32,7 @@ function setXAxisWheelZoom(chart: ReturnType<ReactEChartsCore['getEchartsInstanc
 
 /** Отвечает только за визуальную область графика: placeholder или ECharts canvas. */
 export function HistoryChartArea({
+  avgLineMode,
   hasData,
   hasSelection,
   loading,
@@ -101,6 +104,7 @@ export function HistoryChartArea({
   return (
     <div className="history-chart-shell" onWheelCapture={handleWheelCapture}>
       <ReactEChartsCore
+        key={avgLineMode}
         ref={chartRef}
         echarts={echarts}
         option={option}

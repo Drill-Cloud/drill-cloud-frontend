@@ -76,10 +76,6 @@
   border-radius: var(--radius);
 }
 
-.chart-tooltip {
-  min-width: 240px;
-}
-
 .chart-tooltip-title {
   margin-bottom: 8px;
   color: #e5e7eb;
@@ -88,7 +84,7 @@
 
 .chart-tooltip-row {
   display: grid;
-  grid-template-columns: minmax(90px, 1fr) auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 14px;
   margin-top: 5px;

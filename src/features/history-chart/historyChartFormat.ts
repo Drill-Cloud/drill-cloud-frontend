@@ -56,7 +56,12 @@ export function formatAxisDate(value: number, labelFormat: HistoryAxisLabelForma
 
 function formatChartValue(value: number): string {
   return new Intl.NumberFormat('ru-RU', {
-    maximumFractionDigits: Math.abs(value) >= 100 ? 2 : 3,
+    maximumFractionDigits:
+      Math.abs(value) >= 1000 ? 0
+      : Math.abs(value) >= 100 ? 1
+      : Math.abs(value) >= 10 ? 2
+      : Math.abs(value) >= 1 ? 3
+      : 4,
   }).format(value);
 }
 
@@ -141,7 +146,8 @@ export function formatTooltip(params: unknown): string {
     return '';
   }
 
-  const header = formatTooltipInterval(firstValue);
+  const time = firstValue[0];
+  const header = formatTooltipDateTime(time);
 
   const rows = avgItems.map((item) => {
     const value = item.value as AvgPointValue;
@@ -149,8 +155,7 @@ export function formatTooltip(params: unknown): string {
       '<div class="chart-tooltip-row">',
       `<span class="chart-tooltip-label" style="--chart-tooltip-marker-color:${item.color ?? 'currentColor'};">${item.seriesName ?? ''}</span>`,
       '<strong>',
-      formatTooltipValue(value),
-      value[4] > 1 ? ` · ${value[4]} точек` : '',
+      formatChartValue(value[1]),
       '</strong>',
       '</div>',
     ].join('');

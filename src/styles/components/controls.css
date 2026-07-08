@@ -73,6 +73,12 @@
   background: rgba(201, 122, 61, 0.18);
 }
 
+.segmented__button--active {
+  border-color: rgba(212, 165, 116, 0.34);
+  background: rgba(201, 122, 61, 0.14);
+  color: #f8fafc;
+}
+
 .source-chip,
 .status-pill,
 .metric-card__state {

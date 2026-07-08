@@ -60,11 +60,6 @@
   font-size: inherit;
 }
 
-.history-chart-line-mode__button--active {
-  border-color: var(--line-strong);
-  background: rgba(201, 122, 61, 0.18);
-}
-
 .chart-section--archive .history-chart-shell,
 .chart-section--archive .history-chart {
   flex: 1;

@@ -96,6 +96,7 @@ export function ArchiveView({
   onToggleTag,
 }: ArchiveViewProps) {
   const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
+  const [selectedRangePresetId, setSelectedRangePresetId] = useState<string>('24h');
   const [selectorOpen, setSelectorOpen] = useState(false);
   const selectedPreview = selectedTags.slice(0, 10);
   const hiddenSelectedCount = Math.max(0, selectedTags.length - selectedPreview.length);
@@ -106,6 +107,7 @@ export function ArchiveView({
   const fromIso = toIsoFromInput(range.from) as string;
   const toIso = toIsoFromInput(range.to) as string;
   const updateRangePart = (rangePart: RangePart, inputPart: RangeInputPart, value: string) => {
+    setSelectedRangePresetId('');
     onRangeChange({
       ...range,
       [rangePart]: updateRangeInputPart(range[rangePart], inputPart, value),
@@ -152,14 +154,14 @@ export function ArchiveView({
                 <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Поиск" />
               </label>
               <div className="tag-selector__tools">
-                <button type="button" onClick={onSelectFirstTags}>
+                {/* <button type="button" onClick={onSelectFirstTags}>
                   Первый
-                </button>
+                </button> */}
                 <button type="button" onClick={onSelectVisibleTags}>
-                  Выбрать найденный
+                  Выбрать все
                 </button>
                 <button type="button" onClick={onClearVisibleTags}>
-                  Снять найденные
+                  Снять все
                 </button>
                 <button type="button" onClick={onClearTags}>
                   Сбросить все
@@ -212,12 +214,22 @@ export function ArchiveView({
         onPointerEnter={() => setSelectorOpen(false)}
       >
         <div className="toolbar">
-          <div className="segmented segmented--range-preset">
-            {RANGE_PRESETS.map((preset) => (
-              <button key={preset.id} type="button" onClick={() => onRangeChange(createRange(preset.hours))}>
-                {preset.label}
-              </button>
-            ))}
+          <div className="archive-toolbar-segmented-control">
+            <div className="segmented segmented--range-preset">
+              {RANGE_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={preset.id === selectedRangePresetId ? 'segmented__button--active' : undefined}
+                  onClick={() => {
+                    setSelectedRangePresetId(preset.id);
+                    onRangeChange(createRange(preset.hours));
+                  }}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="archive-date-range">
             <span>С</span>

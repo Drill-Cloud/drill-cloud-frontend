@@ -13,10 +13,8 @@ type ArchiveViewProps = {
   historyGranulate?: string;
   items: CurrentItem[];
   range: DateRangeState;
-  search: string;
   tagLabels: Record<string, string>;
   onRangeChange: (value: DateRangeState) => void;
-  onSearchChange: (value: string) => void;
 };
 
 export function ArchiveView({
@@ -26,10 +24,8 @@ export function ArchiveView({
   historyGranulate,
   items,
   range,
-  search,
   tagLabels,
   onRangeChange,
-  onSearchChange,
 }: ArchiveViewProps) {
   const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
 
@@ -56,11 +52,9 @@ export function ArchiveView({
         historyAxis={historyAxis}
         items={items}
         range={range}
-        search={search}
         tagLabels={tagLabels}
         onAvgLineModeChange={setAvgLineMode}
         onRangeChange={onRangeChange}
-        onSearchChange={onSearchChange}
       />
     </section>
   );

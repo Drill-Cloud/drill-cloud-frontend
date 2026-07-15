@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { CalendarDays, Check, ChevronDown, Clock3, Plus, Search, X } from 'lucide-react';
+import { CalendarDays, Clock3, Plus, X } from 'lucide-react';
 import type { CurrentItem } from '../../entities/current/types';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../history/dateRange';
-import { formatNumber, toIsoFromInput } from '../../utils/format';
+import { toIsoFromInput } from '../../utils/format';
 import type { HistoryGranularity } from '../../utils/historyGranularity';
 import { HistoryChart } from './HistoryChart';
 import { HistoryChartAvgLineModeControl } from './HistoryChartAvgLineModeControl';
+import { HistoryTagPicker } from './HistoryTagPicker';
 import type { AvgLineMode, HistoryZoomRange } from './chartTypes';
 import { createInitialZoomRange } from './historyChartZoom';
 
@@ -24,11 +25,9 @@ type HistoryChartSetProps = {
   initialSelectedTags?: string[];
   items: CurrentItem[];
   range: DateRangeState;
-  search: string;
   tagLabels: Record<string, string>;
   onAvgLineModeChange: (value: AvgLineMode) => void;
   onRangeChange: (value: DateRangeState) => void;
-  onSearchChange: (value: string) => void;
 };
 
 type RangePart = 'from' | 'to';
@@ -103,19 +102,14 @@ type HistoryChartPanelProps = {
   historyAxis: HistoryGranularity;
   items: CurrentItem[];
   avgLineMode: AvgLineMode;
-  search: string;
   tagLabels: Record<string, string>;
   toIso: string;
   zoomRange: HistoryZoomRange;
   onCloseSelector: (chartId: string) => void;
   onCursorChange: (value: number | null) => void;
-  onSearchChange: (value: string) => void;
-  onSelectVisibleTags: (chartId: string) => void;
-  onClearVisibleTags: (chartId: string) => void;
-  onClearTags: (chartId: string) => void;
   onRemove: (chartId: string) => void;
+  onSelectedTagsChange: (chartId: string, tags: string[]) => void;
   onToggleSelector: (chartId: string) => void;
-  onToggleTag: (chartId: string, tag: string) => void;
   onZoomRangeChange: (range: HistoryZoomRange) => void;
 };
 
@@ -129,42 +123,32 @@ function HistoryChartPanel({
   historyAxis,
   items,
   avgLineMode,
-  search,
   tagLabels,
   toIso,
   zoomRange,
   onCloseSelector,
   onCursorChange,
-  onSearchChange,
-  onSelectVisibleTags,
-  onClearVisibleTags,
-  onClearTags,
   onRemove,
+  onSelectedTagsChange,
   onToggleSelector,
-  onToggleTag,
   onZoomRangeChange,
 }: HistoryChartPanelProps) {
-  const selectedPreview = chart.selectedTags.slice(0, 10);
-  const hiddenSelectedCount = Math.max(0, chart.selectedTags.length - selectedPreview.length);
-
   return (
     <article className="history-chart-panel">
       <div className="archive-tag-panel">
         <div className="history-chart-panel__tag-toolbar">
-        <button
-          type="button"
-          className="archive-tag-panel__toggle"
-          onClick={() => onToggleSelector(chart.id)}
-          aria-expanded={chart.selectorOpen}
-        >
-          <span>
-            Показатели
-            <strong>
-              {chart.selectedTags.length} выбрано · {items.length} найдено
-            </strong>
-          </span>
-          <ChevronDown size={18} />
-        </button>
+          <HistoryTagPicker
+            getTagLabel={getTagLabel}
+            items={items}
+            open={chart.selectorOpen}
+            value={chart.selectedTags}
+            onChange={(tags) => onSelectedTagsChange(chart.id, tags)}
+            onOpenChange={(open) => {
+              if (open !== chart.selectorOpen) {
+                onToggleSelector(chart.id);
+              }
+            }}
+          />
           {canRemove ? (
             <button
               type="button"
@@ -177,64 +161,6 @@ function HistoryChartPanel({
             </button>
           ) : null}
         </div>
-
-        {chart.selectorOpen ? (
-          <div className="tag-selector">
-            <div className="tag-selector__header">
-              <label className="search-box">
-                <Search size={16} />
-                <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Поиск" />
-              </label>
-              <div className="tag-selector__tools">
-                <button type="button" onClick={() => onSelectVisibleTags(chart.id)}>
-                  Выбрать все
-                </button>
-                <button type="button" onClick={() => onClearVisibleTags(chart.id)}>
-                  Снять все
-                </button>
-                <button type="button" onClick={() => onClearTags(chart.id)}>
-                  Сбросить все
-                </button>
-              </div>
-            </div>
-
-            <div className="selected-tags">
-              {selectedPreview.length ? (
-                selectedPreview.map((tag) => <span key={tag}>{getTagLabel(tag)}</span>)
-              ) : (
-                <span>Не выбрано</span>
-              )}
-              {hiddenSelectedCount > 0 ? <span>+{hiddenSelectedCount}</span> : null}
-            </div>
-
-            <div className="tag-select-list">
-              {items.map((item) => {
-                const selected = chart.selectedTags.includes(item.tag);
-                const label = getTagLabel(item.tag);
-
-                return (
-                  <button
-                    key={item.tag}
-                    type="button"
-                    className={`tag-select-item ${selected ? 'tag-select-item--selected' : ''}`}
-                    title={item.tag}
-                    onClick={() => onToggleTag(chart.id, item.tag)}
-                    aria-pressed={selected}
-                  >
-                    <span className="tag-select-item__name">
-                      <span>{label}</span>
-                      {label !== item.tag ? <small>{item.tag}</small> : null}
-                    </span>
-                    <span className="tag-select-item__side">
-                      <strong>{formatNumber(item.value)}</strong>
-                      {selected ? <Check size={15} /> : null}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
       </div>
 
       <div
@@ -271,11 +197,9 @@ export function HistoryChartSet({
   initialSelectedTags,
   items,
   range,
-  search,
   tagLabels,
   onAvgLineModeChange,
   onRangeChange,
-  onSearchChange,
 }: HistoryChartSetProps) {
   const [charts, setCharts] = useState<HistoryChartConfig[]>(() => [
     {
@@ -293,7 +217,6 @@ export function HistoryChartSet({
   const toTimeRef = useRef<HTMLInputElement>(null);
   const fromIso = useMemo(() => toIsoFromInput(range.from) as string, [range.from]);
   const toIso = useMemo(() => toIsoFromInput(range.to) as string, [range.to]);
-  const visibleTags = useMemo(() => items.map((item) => item.tag), [items]);
 
   useEffect(() => {
     setZoomRange(createZoomRange(range, historyAxis));
@@ -328,42 +251,9 @@ export function HistoryChartSet({
     [updateChart],
   );
 
-  const toggleTag = useCallback(
-    (chartId: string, tag: string) => {
-      updateChart(chartId, (chart) => ({
-        ...chart,
-        selectedTags: chart.selectedTags.includes(tag)
-          ? chart.selectedTags.filter((selected) => selected !== tag)
-          : [...chart.selectedTags, tag],
-      }));
-    },
-    [updateChart],
-  );
-
-  const selectVisibleTags = useCallback(
-    (chartId: string) => {
-      updateChart(chartId, (chart) => ({
-        ...chart,
-        selectedTags: Array.from(new Set([...chart.selectedTags, ...visibleTags])),
-      }));
-    },
-    [updateChart, visibleTags],
-  );
-
-  const clearVisibleTags = useCallback(
-    (chartId: string) => {
-      const visibleTagSet = new Set(visibleTags);
-      updateChart(chartId, (chart) => ({
-        ...chart,
-        selectedTags: chart.selectedTags.filter((tag) => !visibleTagSet.has(tag)),
-      }));
-    },
-    [updateChart, visibleTags],
-  );
-
-  const clearTags = useCallback(
-    (chartId: string) => {
-      updateChart(chartId, (chart) => ({ ...chart, selectedTags: [] }));
+  const updateSelectedTags = useCallback(
+    (chartId: string, selectedTags: string[]) => {
+      updateChart(chartId, (chart) => ({ ...chart, selectedTags }));
     },
     [updateChart],
   );
@@ -453,19 +343,14 @@ export function HistoryChartSet({
             historyAxis={historyAxis}
             items={items}
             avgLineMode={avgLineMode}
-            search={search}
             tagLabels={tagLabels}
             toIso={toIso}
             zoomRange={zoomRange}
             onCloseSelector={closeSelector}
             onCursorChange={setCursorMs}
-            onSearchChange={onSearchChange}
-            onSelectVisibleTags={selectVisibleTags}
-            onClearVisibleTags={clearVisibleTags}
-            onClearTags={clearTags}
             onRemove={removeChart}
+            onSelectedTagsChange={updateSelectedTags}
             onToggleSelector={toggleSelector}
-            onToggleTag={toggleTag}
             onZoomRangeChange={setZoomRange}
           />
         ))}

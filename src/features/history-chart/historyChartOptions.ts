@@ -37,6 +37,14 @@ export function createHistoryChartOptions({
     },
     tooltip: {
       trigger: 'axis',
+      axisPointer: {
+        type: 'line',
+        lineStyle: {
+          color: 'rgba(226, 232, 240, 0.82)',
+          type: 'dashed',
+          width: 1,
+        },
+      },
       backgroundColor: 'rgba(10, 13, 18, 0.96)',
       borderColor: 'rgba(212, 165, 116, 0.32)',
       textStyle: { color: '#f8fafc' },

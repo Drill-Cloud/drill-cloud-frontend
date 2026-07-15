@@ -145,9 +145,11 @@ function renderBucket(color: string) {
 
     return {
       type: 'group',
+      silent: true,
       children: [
         {
           type: 'rect',
+          silent: true,
           shape: bucketShapes.rangeShape,
           style: {
             fill: new graphic.LinearGradient(0, 0, 0, 1, createAvgGradientStops(color, avgOffset)),
@@ -156,6 +158,7 @@ function renderBucket(color: string) {
         ...(bucketShapes.avgShape
           ? [{
               type: 'rect' as const,
+              silent: true,
               shape: bucketShapes.avgShape,
               style: {
                 fill: color,

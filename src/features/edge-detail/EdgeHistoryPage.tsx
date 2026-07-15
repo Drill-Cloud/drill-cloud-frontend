@@ -15,7 +15,6 @@ export function EdgeHistoryPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [range, setRange] = useState(() => createRange(24));
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const currentEventsConnected = useCurrentEvents(edgeId);
   const current = useQuery({
     queryKey: ['current', edgeId],
@@ -30,22 +29,6 @@ export function EdgeHistoryPage() {
   const from = toIsoFromInput(range.from) as string;
   const to = toIsoFromInput(range.to) as string;
   const historyGranularity = useMemo(() => getHistoryGranularity(from, to), [from, to]);
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((selected) => selected !== tag) : [...prev, tag]));
-  };
-
-  const selectFirstTags = () => {
-    setSelectedTags(visibleItems[0] ? [visibleItems[0].tag] : []);
-  };
-
-  const selectVisibleTags = () => {
-    setSelectedTags((prev) => Array.from(new Set([...prev, ...visibleItems.map((item) => item.tag)])));
-  };
-
-  const clearVisibleTags = () => {
-    const visibleTags = new Set(visibleItems.map((item) => item.tag));
-    setSelectedTags((prev) => prev.filter((tag) => !visibleTags.has(tag)));
-  };
 
   return (
     <EdgePageLayout
@@ -61,17 +44,11 @@ export function EdgeHistoryPage() {
         edgeId={edgeId}
         items={visibleItems}
         search={search}
-        selectedTags={selectedTags}
         historyGranulate={historyGranularity.granulate}
         historyAxis={historyGranularity}
         range={range}
         onSearchChange={setSearch}
         onRangeChange={setRange}
-        onToggleTag={toggleTag}
-        onSelectFirstTags={selectFirstTags}
-        onSelectVisibleTags={selectVisibleTags}
-        onClearVisibleTags={clearVisibleTags}
-        onClearTags={() => setSelectedTags([])}
         getTagLabel={getTagLabel}
         tagLabels={tagLabels}
       />

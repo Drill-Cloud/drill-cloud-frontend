@@ -1,5 +1,6 @@
 import { CustomChart, LineChart } from 'echarts/charts';
 import {
+  AxisPointerComponent,
   DataZoomComponent,
   GridComponent,
   LegendComponent,
@@ -11,6 +12,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 echarts.use([
   CustomChart,
   LineChart,
+  AxisPointerComponent,
   GridComponent,
   LegendComponent,
   TooltipComponent,

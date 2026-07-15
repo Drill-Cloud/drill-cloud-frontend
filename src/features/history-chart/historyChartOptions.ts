@@ -39,10 +39,12 @@ export function createHistoryChartOptions({
       trigger: 'axis',
       axisPointer: {
         type: 'line',
+        // Видимую вертикаль рисуем своим overlay во всех графиках набора.
+        // Нативную линию ECharts прячем, чтобы на активном графике не было дубля.
         lineStyle: {
-          color: 'rgba(226, 232, 240, 0.82)',
+          color: 'rgba(226, 232, 240, 0)',
           type: 'dashed',
-          width: 1,
+          width: 0,
         },
       },
       backgroundColor: 'rgba(10, 13, 18, 0.96)',

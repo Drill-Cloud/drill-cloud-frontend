@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { CalendarDays, Check, ChevronDown, Clock3, Plus, Search } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, Clock3, Plus, Search, X } from 'lucide-react';
 import type { CurrentItem } from '../../entities/current/types';
 import { RANGE_PRESETS, createRange, type DateRangeState } from '../history/dateRange';
 import { formatNumber, toIsoFromInput } from '../../utils/format';
@@ -94,6 +94,7 @@ function DateRangeField({ icon, inputRef, type, value, onChange }: DateRangeFiel
 }
 
 type HistoryChartPanelProps = {
+  canRemove: boolean;
   chart: HistoryChartConfig;
   cursorMs: number | null;
   edgeId: string;
@@ -112,12 +113,14 @@ type HistoryChartPanelProps = {
   onSelectVisibleTags: (chartId: string) => void;
   onClearVisibleTags: (chartId: string) => void;
   onClearTags: (chartId: string) => void;
+  onRemove: (chartId: string) => void;
   onToggleSelector: (chartId: string) => void;
   onToggleTag: (chartId: string, tag: string) => void;
   onZoomRangeChange: (range: HistoryZoomRange) => void;
 };
 
 function HistoryChartPanel({
+  canRemove,
   chart,
   cursorMs,
   edgeId,
@@ -136,6 +139,7 @@ function HistoryChartPanel({
   onSelectVisibleTags,
   onClearVisibleTags,
   onClearTags,
+  onRemove,
   onToggleSelector,
   onToggleTag,
   onZoomRangeChange,
@@ -146,6 +150,7 @@ function HistoryChartPanel({
   return (
     <article className="history-chart-panel">
       <div className="archive-tag-panel">
+        <div className="history-chart-panel__tag-toolbar">
         <button
           type="button"
           className="archive-tag-panel__toggle"
@@ -160,6 +165,18 @@ function HistoryChartPanel({
           </span>
           <ChevronDown size={18} />
         </button>
+          {canRemove ? (
+            <button
+              type="button"
+              className="history-chart-panel__remove"
+              aria-label="Удалить график"
+              title="Удалить график"
+              onClick={() => onRemove(chart.id)}
+            >
+              <X size={17} />
+            </button>
+          ) : null}
+        </div>
 
         {chart.selectorOpen ? (
           <div className="tag-selector">
@@ -362,6 +379,10 @@ export function HistoryChartSet({
     ]);
   }, []);
 
+  const removeChart = useCallback((chartId: string) => {
+    setCharts((prev) => (prev.length > 1 ? prev.filter((chart) => chart.id !== chartId) : prev));
+  }, []);
+
   return (
     <div className="history-chart-set">
       <div className="toolbar history-chart-set__toolbar">
@@ -423,6 +444,7 @@ export function HistoryChartSet({
         {charts.map((chart) => (
           <HistoryChartPanel
             key={chart.id}
+            canRemove={charts.length > 1}
             chart={chart}
             cursorMs={cursorMs}
             edgeId={edgeId}
@@ -441,6 +463,7 @@ export function HistoryChartSet({
             onSelectVisibleTags={selectVisibleTags}
             onClearVisibleTags={clearVisibleTags}
             onClearTags={clearTags}
+            onRemove={removeChart}
             onToggleSelector={toggleSelector}
             onToggleTag={toggleTag}
             onZoomRangeChange={setZoomRange}

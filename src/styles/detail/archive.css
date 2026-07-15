@@ -234,6 +234,33 @@
   margin-bottom: 0;
 }
 
+.history-chart-panel__tag-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  gap: 8px;
+}
+
+.history-chart-panel__remove {
+  width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--radius);
+  background: rgba(2, 6, 23, 0.28);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.history-chart-panel__remove:hover,
+.history-chart-panel__remove:focus-visible {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+  outline: none;
+}
+
 .history-chart-panel .tag-selector__tools {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

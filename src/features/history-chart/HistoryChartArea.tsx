@@ -1,7 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import ReactEChartsCore from 'echarts-for-react/esm/core.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { WheelEvent } from 'react';
 import type { DataZoomEventBatch, DataZoomState } from './chartTypes';
 import { echarts } from './historyChartEcharts';
 
@@ -17,8 +16,6 @@ type HistoryChartAreaProps = {
   zoomFromMs: number;
   zoomToMs: number;
 };
-
-const HISTORY_CHART_GROUP = 'history-chart-set';
 
 type AxisPointerEvent = {
   axesInfo?: Array<{
@@ -63,6 +60,7 @@ export function HistoryChartArea({
   zoomFromMs,
   zoomToMs,
 }: HistoryChartAreaProps) {
+  const shellRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
   const xWheelZoomEnabledRef = useRef(true);
   const [cursorX, setCursorX] = useState<number | null>(null);
@@ -95,17 +93,6 @@ export function HistoryChartArea({
   }, []);
 
   useEffect(() => {
-    const chart = chartRef.current?.getEchartsInstance();
-
-    if (!chart) {
-      return;
-    }
-
-    chart.group = HISTORY_CHART_GROUP;
-    echarts.connect(HISTORY_CHART_GROUP);
-  }, []);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Shift') {
         updateXAxisWheelZoom(false);
@@ -126,6 +113,26 @@ export function HistoryChartArea({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
+    };
+  }, [updateXAxisWheelZoom]);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+
+    if (!shell) {
+      return undefined;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      updateXAxisWheelZoom(!event.shiftKey);
+    };
+
+    // ECharts тоже слушает wheel на своем canvas. Нативный capture-listener на родителе
+    // срабатывает раньше и успевает переключить режим: обычное колесо -> X, Shift+колесо -> только Y.
+    shell.addEventListener('wheel', handleWheel, { capture: true, passive: true });
+
+    return () => {
+      shell.removeEventListener('wheel', handleWheel, { capture: true });
     };
   }, [updateXAxisWheelZoom]);
 
@@ -226,13 +233,6 @@ export function HistoryChartArea({
     return () => cancelAnimationFrame(frameId);
   }, [cursorMs, option, zoomFromMs, zoomToMs]);
 
-  const handleWheelCapture = useCallback(
-    (event: WheelEvent<HTMLDivElement>) => {
-      updateXAxisWheelZoom(!event.shiftKey);
-    },
-    [updateXAxisWheelZoom],
-  );
-
   if (!hasSelection) {
     return <div className="chart-placeholder">Разверните список показателей и выберите серию для графика</div>;
   }
@@ -246,14 +246,14 @@ export function HistoryChartArea({
   }
 
   return (
-    <div className="history-chart-shell" onWheelCapture={handleWheelCapture}>
+    <div ref={shellRef} className="history-chart-shell">
       <ReactEChartsCore
         ref={chartRef}
         echarts={echarts}
         option={option}
         className="history-chart"
         onEvents={onChartEvents}
-        notMerge
+        replaceMerge={['series']}
         lazyUpdate
       />
       {cursorX !== null ? (

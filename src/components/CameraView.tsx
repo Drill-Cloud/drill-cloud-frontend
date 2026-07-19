@@ -83,7 +83,6 @@ export function CameraView({ playbackSettings = DEFAULT_CAMERA_PLAYBACK_SETTINGS
       <video ref={videoRef} className="camera-view__video" controls autoPlay muted playsInline />
       <div className="camera-view__caption">
         <strong>{title}</strong>
-        <span>{wsUrl}</span>
       </div>
       {error ? <div className="camera-view__error">{error}</div> : null}
     </article>

@@ -190,13 +190,13 @@ export function VideoView({ cameras, error, isError, loading }: VideoViewProps) 
 
       {!loading && !isError && cameras.length > 0 ? (
         <CameraViewsContainer>
-          {cameras.map((camera, index) => {
+          {cameras.map((camera) => {
             const wsUrl = createWsUrl(camera);
             return (
               <CameraView
                 key={`${camera.protocol}:${camera.source}`}
                 playbackSettings={playbackSettings}
-                title={`Камера ${index + 1}`}
+                title={camera.name}
                 wsUrl={wsUrl}
               />
             );

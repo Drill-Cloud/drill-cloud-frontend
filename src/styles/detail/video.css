@@ -163,8 +163,7 @@
   color: #cbd5e1;
 }
 
-.camera-view__caption strong,
-.camera-view__caption span {
+.camera-view__caption strong {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -172,13 +171,9 @@
 }
 
 .camera-view__caption strong {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   color: #f8fafc;
   font-size: 0.82rem;
-}
-
-.camera-view__caption span {
-  font-size: 0.72rem;
 }
 
 .camera-view__error {

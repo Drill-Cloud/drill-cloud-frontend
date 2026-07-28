@@ -17,6 +17,118 @@
   gap: 12px;
 }
 
+.camera-playback-settings {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(2, minmax(130px, 170px)) auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--radius);
+  background: rgba(2, 6, 23, 0.24);
+}
+
+.camera-playback-settings__eyebrow,
+.camera-playback-settings label {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.camera-playback-settings strong {
+  display: block;
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 0.94rem;
+}
+
+.camera-playback-settings label {
+  display: grid;
+  gap: 6px;
+}
+
+.camera-playback-settings input {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 34px 0 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.camera-playback-settings__number-field {
+  position: relative;
+  display: block;
+}
+
+.camera-playback-settings__stepper {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  bottom: 3px;
+  display: grid;
+  width: 26px;
+  overflow: hidden;
+  border-left: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0 calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0;
+}
+
+.camera-playback-settings__stepper button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.86);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.camera-playback-settings__stepper button + button {
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.camera-playback-settings__stepper button:hover {
+  background: rgba(201, 122, 61, 0.2);
+  color: #fed7aa;
+}
+
+.camera-playback-settings input:focus {
+  border-color: var(--line-strong);
+  background: rgba(201, 122, 61, 0.14);
+}
+
+.camera-playback-settings__actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.camera-playback-settings__actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.68);
+  color: #e5e7eb;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.camera-playback-settings__actions button:first-child {
+  border-color: rgba(201, 122, 61, 0.44);
+  background: rgba(201, 122, 61, 0.18);
+  color: #fed7aa;
+}
+
+.camera-playback-settings__actions button:hover,
+.camera-playback-settings__actions button:focus-visible {
+  border-color: rgba(232, 201, 160, 0.58);
+  background: rgba(201, 122, 61, 0.24);
+  outline: none;
+}
+
 .camera-view {
   position: relative;
   overflow: hidden;
@@ -81,6 +193,14 @@
 }
 
 @media (max-width: 900px) {
+  .camera-playback-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .camera-playback-settings__actions {
+    justify-content: flex-start;
+  }
+
   .camera-views-grid {
     grid-template-columns: 1fr;
   }

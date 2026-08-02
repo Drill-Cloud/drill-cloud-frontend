@@ -17,7 +17,8 @@ function createWsUrl(camera: CameraItem): string {
   return `${protocol}://${source}`;
 }
 
-const CAMERA_PLAYBACK_SETTINGS_KEY = 'drill.camera.playbackSettings';
+// Новый ключ сбрасывает ранее сохранённые 20/8 и гарантирует применение актуального профиля 24/8 после деплоя.
+const CAMERA_PLAYBACK_SETTINGS_KEY = 'drill.camera.playbackSettings.v4';
 
 type CameraPlaybackSettingsDraft = {
   liveBufferLatencyMaxLatency: string;

@@ -13,20 +13,34 @@ export type CameraPlaybackSettings = {
 };
 
 export const DEFAULT_CAMERA_PLAYBACK_SETTINGS: CameraPlaybackSettings = {
-  liveBufferLatencyMaxLatency: 5.0,
-  liveBufferLatencyMinRemain: 2.0,
+  // Разрешаем накопить до 24 секунд отставания, чтобы краткие сетевые провалы не вызывали частые скачки вперёд.
+  liveBufferLatencyMaxLatency: 24.0,
+  // После принудительного перехода к live оставляем 8 секунд запаса для сглаживания нестабильного соединения.
+  liveBufferLatencyMinRemain: 8.0,
 };
 
 const CAMERA_PLAYER_CONFIG = {
-  enableWorker: true,
+  // В mpegts.js 1.8.0 worker может прислать событие после destroy; основной поток здесь стабильнее освобождается.
+  enableWorker: false,
+  // Сохраняем входной stash-буфер: без него небольшие паузы между WebSocket-чанками сразу превращаются в подёргивания.
   enableStashBuffer: true,
-  stashInitialSize: 512,
+  // 256 КБ достаточно для начального сглаживания, но не создаёт избыточную задержку на малобитрейтных камерах.
+  stashInitialSize: 256 * 1024,
+  // Удаляем уже просмотренные данные из MediaSource, чтобы несколько камер не расходовали память без ограничений.
   autoCleanupSourceBuffer: true,
-  autoCleanupMaxBackwardDuration: 10,
-  autoCleanupMinBackwardDuration: 5,
+  // Начинаем очистку, когда позади текущей позиции накопилось больше 20 секунд видео.
+  autoCleanupMaxBackwardDuration: 20,
+  // После очистки сохраняем 8 секунд истории — этого достаточно для стабильной работы внутренних seek-операций.
+  autoCleanupMinBackwardDuration: 8,
+  // Если поток слишком сильно отстал, разрешаем mpegts.js перейти ближе к актуальной live-позиции.
   liveBufferLatencyChasing: true,
+  // Во время ручной паузы не перематываем видео к live-позиции без команды пользователя.
+  liveBufferLatencyChasingOnPaused: false,
+  // Не меняем playbackRate: ускорение воспроизведения визуально воспринимается как подёргивание изображения.
   liveSync: false,
+  // Для live-потока продолжаем принимать данные постоянно, даже если вперёд уже накоплен буфер.
   lazyLoad: false,
+  // Начинаем загрузку сразу после attach, чтобы стартовый временной буфер формировался без дополнительной паузы.
   deferLoadAfterSourceOpen: false,
 };
 
@@ -71,9 +85,7 @@ export function CameraView({ playbackSettings = DEFAULT_CAMERA_PLAYBACK_SETTINGS
     return () => {
       video.removeEventListener('playing', clearError);
       player?.off(mpegts.Events.ERROR, handlePlayerError);
-      player?.pause();
-      player?.unload();
-      player?.detachMediaElement();
+      // destroy() уже выполняет pause, unload и detachMediaElement, поэтому достаточно одного вызова.
       player?.destroy();
     };
   }, [playbackSettings, wsUrl]);

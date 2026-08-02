@@ -63,7 +63,7 @@ export function createAvgLineSeries(
 
   return [
     {
-      name: `${label} avg-line`,
+      name: label,
       type: 'line',
       data: createAvgLineData(points, granulate, breakOnGaps),
       encode: {

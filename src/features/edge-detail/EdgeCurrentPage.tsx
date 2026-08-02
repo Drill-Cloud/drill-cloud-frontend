@@ -35,6 +35,7 @@ export function EdgeCurrentPage() {
       onRefresh={() => void current.refetch()}
     >
       <IndicatorsView
+        edgeId={edgeId}
         items={visibleItems}
         search={search}
         isError={current.isError}

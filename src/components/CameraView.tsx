@@ -2,8 +2,19 @@ import mpegts from 'mpegts.js';
 import { useEffect, useRef, useState } from 'react';
 
 type CameraViewProps = {
+  playbackSettings?: CameraPlaybackSettings;
   title?: string;
   wsUrl: string;
+};
+
+export type CameraPlaybackSettings = {
+  liveBufferLatencyMaxLatency: number;
+  liveBufferLatencyMinRemain: number;
+};
+
+export const DEFAULT_CAMERA_PLAYBACK_SETTINGS: CameraPlaybackSettings = {
+  liveBufferLatencyMaxLatency: 5.0,
+  liveBufferLatencyMinRemain: 2.0,
 };
 
 const CAMERA_PLAYER_CONFIG = {
@@ -14,14 +25,12 @@ const CAMERA_PLAYER_CONFIG = {
   autoCleanupMaxBackwardDuration: 10,
   autoCleanupMinBackwardDuration: 5,
   liveBufferLatencyChasing: true,
-  liveBufferLatencyMaxLatency: 5.0,
-  liveBufferLatencyMinRemain: 2.0,
   liveSync: false,
   lazyLoad: false,
   deferLoadAfterSourceOpen: false,
 };
 
-export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
+export function CameraView({ playbackSettings = DEFAULT_CAMERA_PLAYBACK_SETTINGS, title = 'Камера', wsUrl }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +56,7 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
 
     player = mpegts.createPlayer(
       { type: 'mpegts', isLive: true, url: wsUrl, hasAudio: false },
-      CAMERA_PLAYER_CONFIG,
+      { ...CAMERA_PLAYER_CONFIG, ...playbackSettings },
     );
 
     player.on(mpegts.Events.ERROR, handlePlayerError);
@@ -67,14 +76,13 @@ export function CameraView({ title = 'Камера', wsUrl }: CameraViewProps) {
       player?.detachMediaElement();
       player?.destroy();
     };
-  }, [wsUrl]);
+  }, [playbackSettings, wsUrl]);
 
   return (
     <article className="camera-view">
       <video ref={videoRef} className="camera-view__video" controls autoPlay muted playsInline />
       <div className="camera-view__caption">
         <strong>{title}</strong>
-        <span>{wsUrl}</span>
       </div>
       {error ? <div className="camera-view__error">{error}</div> : null}
     </article>

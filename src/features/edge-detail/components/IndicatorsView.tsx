@@ -2,8 +2,10 @@ import { Search } from 'lucide-react';
 import type { CurrentItem } from '../../../entities/current/types';
 import { MetricWidget } from '../../../components/MetricWidget';
 import { MetricWidgetsContainer } from '../../../components/MetricWidgetsContainer';
+import { CurrentLiveChart } from '../../current/CurrentLiveChart';
 
 type IndicatorsViewProps = {
+  edgeId: string;
   error: unknown;
   getTagLabel: (tag: string) => string;
   isError: boolean;
@@ -15,6 +17,7 @@ type IndicatorsViewProps = {
 };
 
 export function IndicatorsView({
+  edgeId,
   error,
   getTagLabel,
   isError,
@@ -92,6 +95,7 @@ export function IndicatorsView({
               <MetricWidget key={item.tag} item={item} />
             ))}
           </MetricWidgetsContainer>
+          <CurrentLiveChart edgeId={edgeId} items={items} selectedTags={selectedTags} getTagLabel={getTagLabel} />
         </>
       )}
     </section>

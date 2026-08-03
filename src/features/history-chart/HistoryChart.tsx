@@ -17,14 +17,18 @@ import { useHistoryChartSeries } from './useHistoryChartSeries';
 
 type HistoryChartProps = {
   avgLineMode: AvgLineMode;
+  cursorMs?: number | null;
   edge: string;
   from: string;
   granulate: string;
   labelFormat?: HistoryAxisLabelFormat;
+  onCursorChange?: (value: number | null) => void;
+  onZoomRangeChange?: (range: HistoryZoomRange) => void;
   tags: string[];
   tickIntervalMs?: number;
   to: string;
   tagLabels?: Record<string, string>;
+  zoomRange?: HistoryZoomRange;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -44,22 +48,27 @@ function shouldShowAvgLine(mode: AvgLineMode, range: HistoryZoomRange): boolean 
 
 export function HistoryChart({
   avgLineMode,
+  cursorMs,
   edge,
   from,
   granulate,
   labelFormat,
+  onCursorChange,
+  onZoomRangeChange,
   tags,
   tickIntervalMs,
   to,
   tagLabels = {},
+  zoomRange: controlledZoomRange,
 }: HistoryChartProps) {
   const baseRange = useMemo(
     () => createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to }),
     [from, granulate, labelFormat, tickIntervalMs, to],
   );
-  const [zoomRange, setZoomRange] = useState(() =>
+  const [internalZoomRange, setInternalZoomRange] = useState(() =>
     createInitialZoomRange({ from, granulate, labelFormat, tickIntervalMs, to }),
   );
+  const zoomRange = controlledZoomRange ?? internalZoomRange;
   const baseRangeRef = useRef(baseRange);
   const zoomRangeRef = useRef(zoomRange);
   const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,11 +86,13 @@ export function HistoryChart({
   const legendData = useMemo(() => lines.map((line) => line.label), [lines]);
   const loading = lines.some((line) => line.loading);
   const hasData = series.length > 0;
+  const zoomFromMs = useMemo(() => new Date(zoomRange.from).getTime(), [zoomRange.from]);
+  const zoomToMs = useMemo(() => new Date(zoomRange.to).getTime(), [zoomRange.to]);
 
   useEffect(() => {
     baseRangeRef.current = baseRange;
     zoomRangeRef.current = baseRange;
-    setZoomRange(baseRange);
+    setInternalZoomRange(baseRange);
   }, [baseRange]);
 
   useEffect(() => {
@@ -97,10 +108,12 @@ export function HistoryChart({
     [],
   );
 
+  const dataZoomState = useMemo(() => createDataZoomState(baseRange, zoomRange), [baseRange, zoomRange]);
+
   const option = useMemo(
     () =>
       createHistoryChartOptions({
-        dataZoomState: createDataZoomState(baseRange, zoomRange),
+        dataZoomState,
         from: baseRange.from,
         to: baseRange.to,
         labelFormat: zoomRange.labelFormat,
@@ -108,7 +121,7 @@ export function HistoryChart({
         series,
         tickIntervalMs: zoomRange.tickIntervalMs,
       }),
-    [baseRange, legendData, series, zoomRange],
+    [baseRange, dataZoomState, legendData, series, zoomRange],
   );
 
   // Во время lazy-загрузки нового zoom-диапазона оставляем на экране последний готовый график.
@@ -144,16 +157,24 @@ export function HistoryChart({
 
     zoomTimerRef.current = setTimeout(() => {
       zoomRangeRef.current = nextRange;
-      setZoomRange(nextRange);
+      if (onZoomRangeChange) {
+        onZoomRangeChange(nextRange);
+      } else {
+        setInternalZoomRange(nextRange);
+      }
     }, ZOOM_REQUEST_DELAY_MS);
-  }, []);
+  }, [onZoomRangeChange]);
 
   return (
     <HistoryChartArea
-      avgLineMode={avgLineMode}
       hasData={displayHasData}
       hasSelection={tags.length > 0}
       loading={loading}
+      dataZoomState={dataZoomState}
+      cursorMs={cursorMs}
+      zoomFromMs={zoomFromMs}
+      zoomToMs={zoomToMs}
+      onCursorChange={onCursorChange}
       option={displayOption}
       onDataZoom={handleDataZoom}
     />

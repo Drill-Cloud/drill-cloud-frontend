@@ -1,3 +1,5 @@
+import { getAccessToken } from '../../auth/keycloak';
+
 export type QueryParamValue = string | number | string[] | undefined;
 
 function joinUrl(baseUrl: string, path: string): string {
@@ -41,8 +43,14 @@ export async function getJson<T>(
   init?: RequestInit,
 ): Promise<T> {
   const url = buildApiUrl(baseUrl, path, params);
+  const headers = new Headers(init?.headers);
+  const token = await getAccessToken();
 
-  const response = await fetch(url, init);
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(url, { ...init, headers });
   if (!response.ok) {
     const message = await response.text();
     throw new Error(message || `${response.status} ${response.statusText}`);

@@ -8,6 +8,6 @@ export function getCurrent(edge: string, tags?: string[]): Promise<CurrentRespon
 }
 
 /** Формирует URL SSE-потока текущих значений. */
-export function getCurrentEventsUrl(edge: string, tags?: string[]): string {
-  return buildApiUrl(cloudApiUrl, '/current/events', { edge, tags });
+export function getCurrentEventsUrl(edge: string, tags?: string[], accessToken?: string): string {
+  return buildApiUrl(cloudApiUrl, '/current/events', { edge, tags, access_token: accessToken });
 }

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../auth/authContext';
 import { EdgeSidebar } from './EdgeSidebar';
 import { EdgeTopbar } from './EdgeTopbar';
 import type { DetailView } from '../types';
+import { useUiSettings } from '../../settings/model/settings.context';
 
 type EdgePageLayoutProps = {
   children: ReactNode;
@@ -23,7 +23,8 @@ export function EdgePageLayout({
 }: EdgePageLayoutProps) {
   const navigate = useNavigate();
   const auth = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const settingsStore = useUiSettings();
+  const sidebarCollapsed = settingsStore.settings.interface.sidebarCollapsed;
   const edgePath = `/edges/${encodeURIComponent(edgeId)}`;
 
   return (
@@ -33,7 +34,14 @@ export function EdgePageLayout({
         edgePath={edgePath}
         view={view}
         onNavigate={navigate}
-        onToggleCollapsed={() => setSidebarCollapsed((collapsed) => !collapsed)}
+        onToggleCollapsed={() => {
+          void settingsStore
+            .save({
+              ...settingsStore.settings,
+              interface: { sidebarCollapsed: !sidebarCollapsed },
+            })
+            .catch(() => undefined);
+        }}
       />
 
       <section className={`workspace workspace--${view}`}>

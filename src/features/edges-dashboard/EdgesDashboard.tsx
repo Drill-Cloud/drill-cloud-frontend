@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Clock3, Gauge, LogOut, RefreshCw, Search, ShieldAlert } from 'lucide-react';
+import { ArrowRight, Clock3, Gauge, LogOut, RefreshCw, Search, Settings, ShieldAlert } from 'lucide-react';
 import edgeImage from '../../assets/edge.png';
 import { getEdges } from '../../entities/edge/api';
 import type { EdgeItem } from '../../entities/edge/types';
@@ -8,6 +8,7 @@ import { useAuth } from '../../auth/authContext';
 
 type EdgesDashboardProps = {
   onOpenEdge: (edgeId: string) => void;
+  onOpenSettings: () => void;
 };
 
 function getEdgeTitle(edge: EdgeItem): string {
@@ -20,7 +21,7 @@ function filterEdges(edges: EdgeItem[], search: string): EdgeItem[] {
 }
 
 /** Отображает список буровых без расчетов по текущим значениям. */
-export function EdgesDashboard({ onOpenEdge }: EdgesDashboardProps) {
+export function EdgesDashboard({ onOpenEdge, onOpenSettings }: EdgesDashboardProps) {
   const [search, setSearch] = useState('');
   const auth = useAuth();
   const edges = useQuery({
@@ -45,6 +46,10 @@ export function EdgesDashboard({ onOpenEdge }: EdgesDashboardProps) {
           </label>
           <button type="button" className="icon-button" onClick={() => edges.refetch()} title="Обновить список">
             <RefreshCw size={18} />
+          </button>
+          <button type="button" className="ghost-button" onClick={onOpenSettings}>
+            <Settings size={17} />
+            Настройки
           </button>
           {auth.enabled ? (
             <button type="button" className="ghost-button" onClick={() => void auth.logout()}>

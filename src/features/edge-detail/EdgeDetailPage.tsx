@@ -9,8 +9,10 @@ import {
 import { useCurrentEvents } from '../current/useCurrentEvents';
 import { EdgePageLayout } from './components/EdgePageLayout';
 import { OverviewView } from './components/OverviewView';
+import { useUiSettings } from '../settings/model/settings.context';
 
 export function EdgeDetailPage() {
+  const { settings } = useUiSettings();
   const navigate = useNavigate();
   const { edgeId = '' } = useParams();
   const edgePath = `/edges/${encodeURIComponent(edgeId)}`;
@@ -19,7 +21,7 @@ export function EdgeDetailPage() {
     queryKey: ['current', edgeId],
     queryFn: () => getCurrent(edgeId),
     enabled: Boolean(edgeId),
-    refetchInterval: currentEventsConnected ? false : 1_000,
+    refetchInterval: currentEventsConnected ? false : settings.liveChart.fallbackPollingMs,
   });
   const currentItems = useMemo(() => current.data?.items ?? [], [current.data?.items]);
   const latestUpdatedAt = useMemo(() => getLatestCurrentUpdatedAt(currentItems), [currentItems]);

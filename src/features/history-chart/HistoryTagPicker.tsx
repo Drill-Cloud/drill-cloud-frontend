@@ -100,7 +100,7 @@ export function HistoryTagPicker({
                     removeTag(tag);
                   }}
                 >
-                  <X size={13} />
+                  <X size={17} strokeWidth={2.5} />
                 </button>
               </span>
             ))

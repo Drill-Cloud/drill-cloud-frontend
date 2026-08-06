@@ -97,16 +97,16 @@
 }
 
 .history-tag-picker__chip button {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   border: 0;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.42);
-  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.68);
+  color: #e2e8f0;
   cursor: pointer;
 }
 
@@ -442,7 +442,8 @@
 
 .history-chart-panel__remove {
   width: 48px;
-  min-height: 48px;
+  height: 48px;
+  align-self: start;
   display: inline-flex;
   align-items: center;
   justify-content: center;

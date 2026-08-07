@@ -1,6 +1,6 @@
 import { useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Check, ChevronDown, Search, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import type { CurrentItem } from '../../entities/current/types';
 import { formatNumber } from '../../utils/format';
 
@@ -35,6 +35,7 @@ export function HistoryTagPicker({
   const listId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
+  const hasActiveFilter = Boolean(query.trim());
   const selectedSet = useMemo(() => new Set(value), [value]);
   const visibleItems = useMemo(
     () => items.filter((item) => matchesQuery(item, getTagLabel(item.tag), query.trim())),
@@ -53,12 +54,7 @@ export function HistoryTagPicker({
   };
 
   const selectVisibleTags = () => {
-    onChange(Array.from(new Set([...value, ...visibleItems.map((item) => item.tag)])));
-  };
-
-  const clearVisibleTags = () => {
-    const visibleTagSet = new Set(visibleItems.map((item) => item.tag));
-    onChange(value.filter((tag) => !visibleTagSet.has(tag)));
+    onChange(Array.from(new Set(visibleItems.map((item) => item.tag))));
   };
 
   const removeTag = (tag: string) => {
@@ -104,7 +100,7 @@ export function HistoryTagPicker({
                     removeTag(tag);
                   }}
                 >
-                  <X size={13} />
+                  <X size={17} strokeWidth={2.5} />
                 </button>
               </span>
             ))
@@ -142,20 +138,16 @@ export function HistoryTagPicker({
 
       {open ? (
         <div className="history-tag-picker__dropdown">
-          <div className="tag-selector__header">
-            <label className="search-box">
-              <Search size={16} />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Поиск" />
-            </label>
-            <div className="tag-selector__tools">
-              <button type="button" onClick={selectVisibleTags}>
-                Выбрать найденные
+          <div className="history-tag-picker__toolbar">
+            <span className="history-tag-picker__scope">
+              {hasActiveFilter ? `Найдено по фильтру: ${visibleItems.length}` : `Всего показателей: ${items.length}`}
+            </span>
+            <div className="tag-selector__tools history-tag-picker__tools">
+              <button type="button" disabled={visibleItems.length === 0} onClick={selectVisibleTags}>
+                Выбрать все
               </button>
-              <button type="button" onClick={clearVisibleTags}>
-                Снять найденные
-              </button>
-              <button type="button" onClick={() => onChange([])}>
-                Сбросить все
+              <button type="button" disabled={value.length === 0} onClick={() => onChange([])}>
+                Снять все
               </button>
             </div>
           </div>

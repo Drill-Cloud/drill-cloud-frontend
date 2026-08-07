@@ -136,7 +136,9 @@ function HistoryChartPanel({
   return (
     <article className="history-chart-panel">
       <div className="archive-tag-panel">
-        <div className="history-chart-panel__tag-toolbar">
+        <div
+          className={`history-chart-panel__tag-toolbar${canRemove ? ' history-chart-panel__tag-toolbar--removable' : ''}`}
+        >
           <HistoryTagPicker
             getTagLabel={getTagLabel}
             items={items}

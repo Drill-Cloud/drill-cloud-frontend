@@ -60,7 +60,6 @@ function SettingsSavedModal({ onClose }: { onClose: () => void }) {
         <div className="settings-modal__icon" aria-hidden="true">
           <Check size={28} strokeWidth={2.5} />
         </div>
-        <span className="page-kicker">Готово</span>
         <h2 id="settings-saved-title">Настройки сохранены</h2>
         <p>Новые параметры применены к интерфейсу и сохранены для вашей учётной записи.</p>
         <button ref={closeButtonRef} type="button" className="settings-modal__button" onClick={onClose}>

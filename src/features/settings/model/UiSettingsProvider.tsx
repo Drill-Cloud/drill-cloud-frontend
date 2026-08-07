@@ -1,35 +1,30 @@
-import { useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { getUiSettings, saveUiSettings } from '../api/settings.api';
 import { DEFAULT_UI_SETTINGS } from './defaults';
 import { UiSettingsContext, type UiSettingsContextValue } from './settings.context';
-import { readCachedUiSettings, writeCachedUiSettings } from './settings.storage';
 import type { UiSettings } from './settings.types';
 import { normalizeUiSettings } from './settings.validation';
 
 export function UiSettingsProvider({ children }: PropsWithChildren) {
-  const [settings, setSettings] = useState<UiSettings>(readCachedUiSettings);
+  const [settings, setSettings] = useState<UiSettings>(DEFAULT_UI_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const initialSettingsRef = useRef(settings);
 
   useEffect(() => {
     let active = true;
 
     void getUiSettings()
-      .then(async (response) => {
+      .then((response) => {
         if (!active) return;
-        if (response.settings) {
-          const normalized = normalizeUiSettings(response.settings);
-          setSettings(normalized);
-          writeCachedUiSettings(normalized);
-        } else {
-          await saveUiSettings(initialSettingsRef.current);
-        }
+        setSettings(response.settings ? normalizeUiSettings(response.settings) : DEFAULT_UI_SETTINGS);
         setError(null);
       })
       .catch((loadError: unknown) => {
-        if (active) setError(`Серверные настройки недоступны, используется локальный кеш: ${String(loadError)}`);
+        if (active) {
+          setSettings(DEFAULT_UI_SETTINGS);
+          setError(`Серверные настройки недоступны, используются значения по умолчанию: ${String(loadError)}`);
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -48,11 +43,10 @@ export function UiSettingsProvider({ children }: PropsWithChildren) {
       error,
       save: async (nextSettings) => {
         const normalized = normalizeUiSettings(nextSettings);
-        setSettings(normalized);
-        writeCachedUiSettings(normalized);
         setSaving(true);
         try {
-          await saveUiSettings(normalized);
+          const response = await saveUiSettings(normalized);
+          setSettings(response.settings ? normalizeUiSettings(response.settings) : normalized);
           setError(null);
         } catch (saveError) {
           setError(`Не удалось сохранить настройки на сервере: ${String(saveError)}`);
@@ -62,11 +56,10 @@ export function UiSettingsProvider({ children }: PropsWithChildren) {
         }
       },
       reset: async () => {
-        setSettings(DEFAULT_UI_SETTINGS);
-        writeCachedUiSettings(DEFAULT_UI_SETTINGS);
         setSaving(true);
         try {
-          await saveUiSettings(DEFAULT_UI_SETTINGS);
+          const response = await saveUiSettings(DEFAULT_UI_SETTINGS);
+          setSettings(response.settings ? normalizeUiSettings(response.settings) : DEFAULT_UI_SETTINGS);
           setError(null);
         } catch (resetError) {
           setError(`Не удалось сбросить серверные настройки: ${String(resetError)}`);

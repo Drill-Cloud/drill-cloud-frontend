@@ -1,5 +1,5 @@
-import { ArrowLeft, RotateCcw, Save, Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowLeft, Check, RotateCcw, Save, Settings, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_UI_SETTINGS } from '../model/defaults';
 import { useUiSettings } from '../model/settings.context';
@@ -32,19 +32,57 @@ function NumberField({ hint, label, max, min, onChange, step = 1, value }: Numbe
   );
 }
 
+function SettingsSavedModal({ onClose }: { onClose: () => void }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="settings-modal-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-saved-title">
+        <button type="button" className="settings-modal__close" onClick={onClose} aria-label="Закрыть окно">
+          <X size={18} />
+        </button>
+        <div className="settings-modal__icon" aria-hidden="true">
+          <Check size={28} strokeWidth={2.5} />
+        </div>
+        <span className="page-kicker">Готово</span>
+        <h2 id="settings-saved-title">Настройки сохранены</h2>
+        <p>Новые параметры применены к интерфейсу и сохранены для вашей учётной записи.</p>
+        <button ref={closeButtonRef} type="button" className="settings-modal__button" onClick={onClose}>
+          Продолжить
+        </button>
+      </section>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const navigate = useNavigate();
   const store = useUiSettings();
   const [draft, setDraft] = useState<UiSettings>(store.settings);
-  const [saved, setSaved] = useState(false);
+  const [savedModalOpen, setSavedModalOpen] = useState(false);
 
   useEffect(() => setDraft(store.settings), [store.settings]);
 
   const save = async () => {
     try {
       await store.save(draft);
-      setSaved(true);
-      window.setTimeout(() => setSaved(false), 2_000);
+      setSavedModalOpen(true);
     } catch {
       // Ошибка уже отображается из единого store.
     }
@@ -117,10 +155,12 @@ export function SettingsPage() {
       </div>
 
       <footer className="settings-actions">
-        <span>{saved ? 'Настройки сохранены' : 'Изменения применяются после сохранения'}</span>
+        <span>Изменения применяются после сохранения</span>
         <button type="button" className="ghost-button" disabled={store.saving} onClick={() => void reset()}><RotateCcw size={16} /> По умолчанию</button>
         <button type="button" className="primary-button" disabled={store.saving} onClick={() => void save()}><Save size={16} /> {store.saving ? 'Сохранение…' : 'Сохранить'}</button>
       </footer>
+
+      {savedModalOpen ? <SettingsSavedModal onClose={() => setSavedModalOpen(false)} /> : null}
     </main>
   );
 }

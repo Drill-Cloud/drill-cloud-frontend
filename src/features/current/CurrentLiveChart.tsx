@@ -4,12 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CurrentItem } from '../../entities/current/types';
 import { getHistoryBatch } from '../../entities/history/api';
 import { formatNumber } from '../../utils/format';
+import { parseGranulateMs } from '../../utils/historyGranularity';
 import { echarts } from '../history-chart/historyChartEcharts';
-
-const LIVE_WINDOW_MS = 25 * 60 * 1000;
-const LIVE_GRANULATE = '5 seconds';
-const LIVE_GRANULATE_MS = 5_000;
-const MAX_POINTS_PER_TAG = 300;
+import { useUiSettings } from '../settings/model/settings.context';
 
 type LivePoint = [number, number];
 type LiveSeriesByTag = Record<string, LivePoint[]>;
@@ -38,29 +35,29 @@ function isNumberValue(value: CurrentItem['value']): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function trimPoints(points: LivePoint[], now: number): LivePoint[] {
-  const from = now - LIVE_WINDOW_MS;
+function trimPoints(points: LivePoint[], now: number, windowMs: number, maxPoints: number): LivePoint[] {
+  const from = now - windowMs;
 
-  return points.filter(([time]) => time >= from).slice(-MAX_POINTS_PER_TAG);
+  return points.filter(([time]) => time >= from).slice(-maxPoints);
 }
 
-function toLiveBucket(time: number): number {
-  return Math.floor(time / LIVE_GRANULATE_MS) * LIVE_GRANULATE_MS;
+function toLiveBucket(time: number, granulateMs: number): number {
+  return Math.floor(time / granulateMs) * granulateMs;
 }
 
 function hasSamePoint(points: LivePoint[], point: LivePoint): boolean {
   return points.some(([time, value]) => time === point[0] && value === point[1]);
 }
 
-function mergePoint(points: LivePoint[], point: LivePoint, now: number): LivePoint[] {
+function mergePoint(points: LivePoint[], point: LivePoint, now: number, windowMs: number, maxPoints: number): LivePoint[] {
   const next = points.filter(([time]) => time !== point[0]);
   next.push(point);
   next.sort((a, b) => a[0] - b[0]);
 
-  return trimPoints(next, now);
+  return trimPoints(next, now, windowMs, maxPoints);
 }
 
-function mergePoints(historyPoints: LivePoint[], livePoints: LivePoint[], now: number): LivePoint[] {
+function mergePoints(historyPoints: LivePoint[], livePoints: LivePoint[], now: number, windowMs: number, maxPoints: number): LivePoint[] {
   const pointsByTime = new Map<number, number>();
 
   for (const [time, value] of historyPoints) {
@@ -74,6 +71,8 @@ function mergePoints(historyPoints: LivePoint[], livePoints: LivePoint[], now: n
   return trimPoints(
     Array.from(pointsByTime.entries()).sort(([leftTime], [rightTime]) => leftTime - rightTime),
     now,
+    windowMs,
+    maxPoints,
   );
 }
 
@@ -163,16 +162,16 @@ function getLiveTooltipPosition(
   return [x, gap];
 }
 
-async function loadInitialSeries(edgeId: string, tags: string[], signal: AbortSignal): Promise<LiveSeriesByTag> {
+async function loadInitialSeries(edgeId: string, tags: string[], windowMs: number, granulate: string, signal: AbortSignal): Promise<LiveSeriesByTag> {
   const to = new Date();
-  const from = new Date(to.getTime() - LIVE_WINDOW_MS);
+  const from = new Date(to.getTime() - windowMs);
   const response = await getHistoryBatch(
     {
       edge: edgeId,
       tags,
       from: from.toISOString(),
       to: to.toISOString(),
-      granulate: LIVE_GRANULATE,
+      granulate,
     },
     signal,
   );
@@ -189,22 +188,26 @@ async function loadInitialSeries(edgeId: string, tags: string[], signal: AbortSi
 }
 
 export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: CurrentLiveChartProps) {
+  const { settings } = useUiSettings();
+  const liveSettings = settings.liveChart;
+  const liveWindowMs = liveSettings.windowMinutes * 60 * 1000;
+  const liveGranulateMs = parseGranulateMs(liveSettings.granulate);
   const [seriesByTag, setSeriesByTag] = useState<LiveSeriesByTag>({});
   const [loading, setLoading] = useState(false);
   const [initialHistoryLoading, setInitialHistoryLoading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const lastLiveSnapshotRef = useRef<Record<string, string>>({});
   const initialLoadIdRef = useRef(0);
-  const chartTags = useMemo(() => getChartTags(items, selectedTags), [items, selectedTags]);
-  const chartTagsKey = chartTags.join('|');
+  const chartTagsKey = useMemo(() => JSON.stringify(getChartTags(items, selectedTags)), [items, selectedTags]);
+  const chartTags = useMemo(() => JSON.parse(chartTagsKey) as string[], [chartTagsKey]);
   const showInitialLoader = initialHistoryLoading;
 
   // Время двигает видимое окно графика, даже если новые SSE-точки временно не приходят.
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 5_000);
+    const timer = window.setInterval(() => setNow(Date.now()), liveSettings.shiftIntervalMs);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [liveSettings.shiftIntervalMs]);
 
   // История нужна только один раз при выборе набора линий: дальше график живет на current SSE.
   useEffect(() => {
@@ -223,11 +226,17 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
     setLoading(true);
     setInitialHistoryLoading(true);
 
-    void loadInitialSeries(edgeId, chartTags, controller.signal)
+    void loadInitialSeries(edgeId, chartTags, liveWindowMs, liveSettings.granulate, controller.signal)
       .then((nextSeries) =>
         setSeriesByTag((prev) =>
           chartTags.reduce<LiveSeriesByTag>((acc, tag) => {
-            acc[tag] = mergePoints(nextSeries[tag] ?? [], prev[tag] ?? [], Date.now());
+            acc[tag] = mergePoints(
+              nextSeries[tag] ?? [],
+              prev[tag] ?? [],
+              Date.now(),
+              liveWindowMs,
+              liveSettings.maxPointsPerTag,
+            );
             return acc;
           }, {}),
         ),
@@ -245,16 +254,16 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
       });
 
     return () => controller.abort();
-  }, [edgeId, chartTagsKey]);
+  }, [edgeId, chartTags, liveSettings.granulate, liveSettings.maxPointsPerTag, liveWindowMs]);
 
-  // Новые current-значения доклеиваем в память браузера и держим только последние 25 минут.
+  // Новые current-значения доклеиваем в память браузера и ограничиваем настроенным окном.
   useEffect(() => {
     if (chartTags.length === 0) {
       return;
     }
 
     const tagSet = new Set(chartTags);
-    const pointTime = toLiveBucket(Date.now());
+    const pointTime = toLiveBucket(Date.now(), liveGranulateMs);
     const livePoints = items
       .filter((item) => tagSet.has(item.tag) && isNumberValue(item.value))
       .filter((item) => {
@@ -284,13 +293,13 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
           continue;
         }
 
-        next[tag] = mergePoint(points, point, pointTime);
+        next[tag] = mergePoint(points, point, pointTime, liveWindowMs, liveSettings.maxPointsPerTag);
         changed = true;
       }
 
       return changed ? next : prev;
     });
-  }, [items, chartTagsKey]);
+  }, [items, chartTags, liveGranulateMs, liveSettings.maxPointsPerTag, liveWindowMs]);
 
   const option = useMemo<EChartsOption>(() => {
     const series: SeriesOption[] = chartTags.map((tag, index) => {
@@ -349,7 +358,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
       },
       xAxis: {
         type: 'time',
-        min: now - LIVE_WINDOW_MS,
+        min: now - liveWindowMs,
         max: now,
         axisLine: {
           lineStyle: { color: 'rgba(148, 163, 184, 0.45)' },
@@ -373,7 +382,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
       },
       series,
     };
-  }, [chartTags, chartTagsKey, getTagLabel, now, seriesByTag]);
+  }, [chartTags, getTagLabel, liveWindowMs, now, seriesByTag]);
 
   if (chartTags.length === 0) {
     return (

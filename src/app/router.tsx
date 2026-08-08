@@ -4,11 +4,12 @@ import { EdgeDetailPage } from '../features/edge-detail/EdgeDetailPage';
 import { EdgeHistoryPage } from '../features/edge-detail/EdgeHistoryPage';
 import { EdgeVideoPage } from '../features/edge-detail/EdgeVideoPage';
 import { EdgesDashboard } from '../features/edges-dashboard/EdgesDashboard';
+import { SettingsPage } from '../features/settings/ui/SettingsPage';
 
 function DashboardRoute() {
   const navigate = useNavigate();
 
-  return <EdgesDashboard onOpenEdge={(edgeId) => navigate(`/edges/${encodeURIComponent(edgeId)}`)} />;
+  return <EdgesDashboard onOpenEdge={(edgeId) => navigate(`/edges/${encodeURIComponent(edgeId)}`)} onOpenSettings={() => navigate('/settings')} />;
 }
 
 export function AppRouter() {
@@ -21,6 +22,7 @@ export function AppRouter() {
         <Route path="/edges/:edgeId/archive" element={<EdgeHistoryPage />} />
         <Route path="/edges/:edgeId/indicators" element={<EdgeCurrentPage />} />
         <Route path="/edges/:edgeId/video" element={<EdgeVideoPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/edges" replace />} />
       </Routes>
     </BrowserRouter>

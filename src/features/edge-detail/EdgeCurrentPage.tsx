@@ -6,8 +6,10 @@ import { createCurrentTagLabels, filterCurrentItems } from '../current/model';
 import { useCurrentEvents } from '../current/useCurrentEvents';
 import { EdgePageLayout } from './components/EdgePageLayout';
 import { IndicatorsView } from './components/IndicatorsView';
+import { useUiSettings } from '../settings/model/settings.context';
 
 export function EdgeCurrentPage() {
+  const { settings } = useUiSettings();
   const { edgeId = '' } = useParams();
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -16,7 +18,7 @@ export function EdgeCurrentPage() {
     queryKey: ['current', edgeId],
     queryFn: () => getCurrent(edgeId),
     enabled: Boolean(edgeId),
-    refetchInterval: currentEventsConnected ? false : 1_000,
+    refetchInterval: currentEventsConnected ? false : settings.liveChart.fallbackPollingMs,
   });
   const currentItems = useMemo(() => current.data?.items ?? [], [current.data?.items]);
   const tagLabels = useMemo(() => createCurrentTagLabels(currentItems), [currentItems]);

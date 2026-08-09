@@ -9,17 +9,19 @@ import { useCurrentEvents } from '../current/useCurrentEvents';
 import { createRange } from '../history/dateRange';
 import { ArchiveView } from './components/ArchiveView';
 import { EdgePageLayout } from './components/EdgePageLayout';
+import { useUiSettings } from '../settings/model/settings.context';
 
 export function EdgeHistoryPage() {
+  const { settings } = useUiSettings();
   const { edgeId = '' } = useParams();
   const queryClient = useQueryClient();
-  const [range, setRange] = useState(() => createRange(24));
+  const [range, setRange] = useState(() => createRange(settings.archiveChart.defaultPeriodHours));
   const currentEventsConnected = useCurrentEvents(edgeId);
   const current = useQuery({
     queryKey: ['current', edgeId],
     queryFn: () => getCurrent(edgeId),
     enabled: Boolean(edgeId),
-    refetchInterval: currentEventsConnected ? false : 1_000,
+    refetchInterval: currentEventsConnected ? false : settings.liveChart.fallbackPollingMs,
   });
   const currentItems = useMemo(() => current.data?.items ?? [], [current.data?.items]);
   const tagLabels = useMemo(() => createCurrentTagLabels(currentItems), [currentItems]);

@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Gauge, Menu, PanelLeftClose, PanelLeftOpen, Video } from 'lucide-react';
+import { Activity, BarChart3, Gauge, Menu, PanelLeftClose, PanelLeftOpen, Settings, Video } from 'lucide-react';
 import type { DetailView } from '../types';
 
 type EdgeSidebarProps = {
@@ -63,6 +63,10 @@ export function EdgeSidebar({ collapsed, edgePath, view, onNavigate, onToggleCol
         >
           <Video size={18} />
           <span className="nav-label">Видео</span>
+        </button>
+        <button className="nav-item nav-item--button" type="button" onClick={() => onNavigate('/settings')}>
+          <Settings size={18} />
+          <span className="nav-label">Настройки</span>
         </button>
       </nav>
     </aside>

@@ -72,7 +72,7 @@ export function HistoryTagPicker({
   };
 
   return (
-    <div className="history-tag-picker">
+    <div className="history-tag-picker" data-testid="history-tag-picker">
       <div
         className="history-tag-picker__control"
         role="combobox"
@@ -137,7 +137,7 @@ export function HistoryTagPicker({
       </div>
 
       {open ? (
-        <div className="history-tag-picker__dropdown">
+        <div className="history-tag-picker__dropdown" data-testid="history-tag-picker-dropdown">
           <div className="history-tag-picker__toolbar">
             <span className="history-tag-picker__scope">
               {hasActiveFilter ? `Найдено по фильтру: ${visibleItems.length}` : `Всего показателей: ${items.length}`}

@@ -134,7 +134,7 @@ function HistoryChartPanel({
   onZoomRangeChange,
 }: HistoryChartPanelProps) {
   return (
-    <article className="history-chart-panel">
+    <article className="history-chart-panel" data-testid="history-chart-panel" data-chart-id={chart.id}>
       <div className="archive-tag-panel">
         <div
           className={`history-chart-panel__tag-toolbar${canRemove ? ' history-chart-panel__tag-toolbar--removable' : ''}`}

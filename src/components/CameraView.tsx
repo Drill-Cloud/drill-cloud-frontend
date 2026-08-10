@@ -79,8 +79,8 @@ export function CameraView({ playbackSettings = DEFAULT_CAMERA_PLAYBACK_SETTINGS
   }, [playbackSettings, wsUrl]);
 
   return (
-    <article className="camera-view">
-      <video ref={videoRef} className="camera-view__video" controls autoPlay muted playsInline />
+    <article className="camera-view" data-testid="camera-view" data-camera-title={title}>
+      <video ref={videoRef} className="camera-view__video" data-testid="camera-video" controls autoPlay muted playsInline />
       <div className="camera-view__caption">
         <strong>{title}</strong>
       </div>

@@ -113,7 +113,7 @@ function EdgeCard({
   const title = getEdgeTitle(edge);
 
   return (
-    <article className="edge-card">
+    <article className="edge-card" data-testid="edge-card" data-edge-id={edge.id}>
       <header className="edge-card__header">
         <div className="edge-card__logo">
           <img src={edgeImage} alt="" />

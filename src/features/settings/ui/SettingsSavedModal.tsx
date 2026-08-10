@@ -26,7 +26,13 @@ export function SettingsSavedModal({ onClose }: SettingsSavedModalProps) {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section className="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-saved-title">
+      <section
+        className="settings-modal"
+        data-testid="settings-saved-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-saved-title"
+      >
         <button type="button" className="settings-modal__close" onClick={onClose} aria-label="Закрыть окно">
           <X size={18} />
         </button>

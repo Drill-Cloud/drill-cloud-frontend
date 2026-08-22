@@ -52,15 +52,9 @@ export async function refreshToken(minValidity = 30): Promise<string | null> {
 
         return client.token ?? null;
       })
-      .catch(async () => {
-        setAuthState({
-          authenticated: false,
-          username: null,
-          fullName: null,
-          email: null,
-        });
-
-        await login();
+      .catch(() => {
+        // В режиме login-required очистка токена сама запускает один переход на вход.
+        client.clearToken();
         return null;
       })
       .finally(() => {

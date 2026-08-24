@@ -10,7 +10,7 @@ export function MetricWidget({ item }: MetricWidgetProps) {
   const unit = item.unitOfMeasurement?.trim();
 
   return (
-    <article className="metric-widget" title={`${name} (${item.tag})`}>
+    <article className="metric-widget" title={`${name} (${item.tag})`} data-testid="metric-widget" data-tag={item.tag}>
       <span className="metric-widget__id">{item.tag}</span>
       <span className="metric-widget__name">{name}</span>
       <span className="metric-widget__reading">

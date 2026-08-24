@@ -386,7 +386,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
 
   if (chartTags.length === 0) {
     return (
-      <div className="current-live-chart">
+      <div className="current-live-chart" data-testid="current-live-chart">
         <div className="current-live-chart__header">
           <span className="page-kicker">Live</span>
           <h3>Живой график текущих значений</h3>
@@ -397,7 +397,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
   }
 
   return (
-    <div className="current-live-chart">
+    <div className="current-live-chart" data-testid="current-live-chart">
       <div className="current-live-chart__header">
         <div>
           <span className="page-kicker">Live</span>

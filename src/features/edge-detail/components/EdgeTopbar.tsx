@@ -22,7 +22,11 @@ export function EdgeTopbar({
       <div>
         <span className="page-kicker">Операторская панель</span>
         <h1>Буровая установка {edgeId}</h1>
-        <span className={`current-transport current-transport--${currentEventsConnected ? 'sse' : 'polling'}`}>
+        <span
+          className={`current-transport current-transport--${currentEventsConnected ? 'sse' : 'polling'}`}
+          data-testid="current-transport"
+          data-transport={currentEventsConnected ? 'sse' : 'polling'}
+        >
           {currentEventsConnected ? 'SSE live' : 'polling'}
         </span>
       </div>

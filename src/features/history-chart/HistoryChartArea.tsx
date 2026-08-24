@@ -246,7 +246,7 @@ export function HistoryChartArea({
   }
 
   return (
-    <div ref={shellRef} className="history-chart-shell">
+    <div ref={shellRef} className="history-chart-shell" data-testid="history-chart">
       <ReactEChartsCore
         ref={chartRef}
         echarts={echarts}

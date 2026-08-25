@@ -26,6 +26,7 @@ type HistoryChartSetProps = {
   items: CurrentItem[];
   range: DateRangeState;
   tagLabels: Record<string, string>;
+  tagColors: Record<string, string>;
   onAvgLineModeChange: (value: AvgLineMode) => void;
   onRangeChange: (value: DateRangeState) => void;
 };
@@ -103,6 +104,7 @@ type HistoryChartPanelProps = {
   items: CurrentItem[];
   avgLineMode: AvgLineMode;
   tagLabels: Record<string, string>;
+  tagColors: Record<string, string>;
   toIso: string;
   zoomRange: HistoryZoomRange;
   onCloseSelector: (chartId: string) => void;
@@ -124,6 +126,7 @@ function HistoryChartPanel({
   items,
   avgLineMode,
   tagLabels,
+  tagColors,
   toIso,
   zoomRange,
   onCloseSelector,
@@ -182,6 +185,7 @@ function HistoryChartPanel({
           labelFormat={historyAxis.labelFormat}
           tags={chart.selectedTags}
           tagLabels={tagLabels}
+          tagColors={tagColors}
           zoomRange={zoomRange}
           onCursorChange={onCursorChange}
           onZoomRangeChange={onZoomRangeChange}
@@ -200,6 +204,7 @@ export function HistoryChartSet({
   items,
   range,
   tagLabels,
+  tagColors,
   onAvgLineModeChange,
   onRangeChange,
 }: HistoryChartSetProps) {
@@ -346,6 +351,7 @@ export function HistoryChartSet({
             items={items}
             avgLineMode={avgLineMode}
             tagLabels={tagLabels}
+            tagColors={tagColors}
             toIso={toIso}
             zoomRange={zoomRange}
             onCloseSelector={closeSelector}

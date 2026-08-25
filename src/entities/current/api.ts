@@ -2,7 +2,7 @@ import { buildApiUrl, getJson } from '../../shared/api/http';
 import { cloudApiUrl } from '../../shared/config/env';
 import type { CurrentResponse } from './types';
 
-/** Загружает текущие значения показателей для выбранной буровой. */
+/** Загружает текущие значения показателей для выбранной установки. */
 export function getCurrent(edge: string, tags?: string[]): Promise<CurrentResponse> {
   return getJson<CurrentResponse>(cloudApiUrl, '/current', { edge, tags });
 }

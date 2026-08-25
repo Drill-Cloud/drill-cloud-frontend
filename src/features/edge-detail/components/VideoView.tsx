@@ -24,13 +24,13 @@ export function VideoView({ cameras, error, isError, loading }: VideoViewProps) 
       <div className="section-header">
         <div>
           <span className="page-kicker"><Video size={14} /> Видео</span>
-          <h2>Видеопотоки буровой</h2>
+          <h2>Видеопотоки установки</h2>
         </div>
       </div>
 
       {loading ? <div className="empty-panel">Загрузка камер...</div> : null}
       {isError ? <div className="empty-panel">Не удалось загрузить камеры: {String(error)}</div> : null}
-      {!loading && !isError && cameras.length === 0 ? <div className="empty-panel">Камеры для этой буровой не настроены</div> : null}
+      {!loading && !isError && cameras.length === 0 ? <div className="empty-panel">Камеры для этой установки не настроены</div> : null}
 
       {!loading && !isError && cameras.length > 0 ? (
         <CameraViewsContainer>

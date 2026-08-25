@@ -9,17 +9,6 @@ import type { HistoryPoint } from '../../entities/history/types';
 import { parseGranulateMs } from '../../utils/historyGranularity';
 import type { HistoryBucketValue } from './chartTypes';
 
-export const SERIES_COLORS = [
-  '#5B8FF9',
-  '#5AD8A6',
-  '#F6BD16',
-  '#E8684A',
-  '#6DC8EC',
-  '#FF9D4D',
-  '#73D13D',
-  '#A7B3FF',
-];
-
 const BUCKET = {
   time: 0,
   avg: 1,
@@ -173,12 +162,10 @@ function renderBucket(color: string) {
 /** Создает bucket-серию на тег: min..max слот и горизонтальный avg-маркер. */
 export function createSeriesOptions(
   points: HistoryPoint[],
-  index: number,
+  color: string,
   label: string,
   granulate: string,
 ): SeriesOption[] {
-  const color = SERIES_COLORS[index % SERIES_COLORS.length];
-
   return [
     {
       name: label,

@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
     "build": "tsc -b && vite build",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint \".storybook/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\"",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "docs:init": "git submodule update --init --recursive docs/shared",
     "docs:update": "git submodule update --remote --recursive docs/shared",
     "docs:status": "git submodule status docs/shared"
@@ -25,6 +27,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
+    "@storybook/addon-a11y": "^10.5.10",
+    "@storybook/addon-docs": "^10.5.10",
+    "@storybook/react-vite": "^10.5.10",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^6.0.2",
@@ -32,6 +37,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "storybook": "^10.5.10",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^8.0.16"

@@ -1,0 +1,211 @@
+.metric-gauge-widget,
+.metric-trend-widget {
+  position: relative;
+  min-width: 260px;
+  overflow: hidden;
+  border: 1px solid rgba(88, 103, 121, 0.52);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 30%),
+    linear-gradient(145deg, rgba(18, 25, 34, 0.97), rgba(5, 8, 13, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+.metric-gauge-widget::before,
+.metric-trend-widget::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--gauge-color, var(--trend-color));
+  box-shadow: 0 0 18px var(--gauge-color, var(--trend-color));
+}
+
+.metric-gauge-widget {
+  display: grid;
+  gap: 16px;
+  padding: 17px;
+}
+
+.metric-gauge-widget__header,
+.metric-trend-widget__header > div {
+  min-width: 0;
+}
+
+.metric-gauge-widget__header span,
+.metric-gauge-widget__header small,
+.metric-trend-widget__header span,
+.metric-trend-widget__header small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-gauge-widget__header span,
+.metric-trend-widget__header > div > span {
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  font-weight: 760;
+}
+
+.metric-gauge-widget__header small,
+.metric-trend-widget__header small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.metric-gauge-widget__gauge {
+  position: relative;
+  width: 156px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: conic-gradient(var(--gauge-color) var(--gauge-progress), rgba(148, 163, 184, 0.14) 0);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--gauge-color) 18%, transparent);
+}
+
+.metric-gauge-widget__gauge::after {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: inherit;
+  background: #080c12;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.62);
+}
+
+.metric-gauge-widget__gauge.is-unavailable {
+  filter: saturate(0.25);
+  opacity: 0.74;
+}
+
+.metric-gauge-widget__reading {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.metric-gauge-widget__reading strong,
+.metric-trend-widget__reading strong {
+  color: #f8fafc;
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.metric-gauge-widget__reading span,
+.metric-trend-widget__reading span {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.metric-gauge-widget__range {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-gauge-widget__range strong {
+  color: var(--gauge-color);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.metric-gauge-widget__range span:last-child {
+  text-align: right;
+}
+
+.metric-trend-widget {
+  display: grid;
+  gap: 14px;
+  padding: 17px;
+}
+
+.metric-trend-widget__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metric-trend-widget__delta {
+  flex: 0 0 auto;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 6px;
+  font-size: 0.72rem !important;
+  font-weight: 750;
+}
+
+.metric-trend-widget__delta.is-up {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.09);
+}
+
+.metric-trend-widget__delta.is-down {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.09);
+}
+
+.metric-trend-widget__delta.is-flat {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.metric-trend-widget__reading {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.metric-trend-widget__chart {
+  width: 100%;
+  height: 78px;
+  overflow: visible;
+}
+
+.metric-trend-widget__chart line {
+  stroke: rgba(148, 163, 184, 0.15);
+  stroke-width: 1;
+}
+
+.metric-trend-widget__chart polyline {
+  fill: none;
+  stroke: var(--trend-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--trend-color) 55%, transparent));
+}
+
+.metric-trend-widget footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-trend-widget footer span:last-child {
+  color: var(--trend-color);
+  font-weight: 750;
+}

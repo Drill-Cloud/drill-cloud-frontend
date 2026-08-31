@@ -15,6 +15,17 @@ services:
     networks:
       - proxy
 
+  drill-storybook:
+    # Storybook публикуется отдельно от пользовательского интерфейса.
+    container_name: "container-drill-storybook-${BRANCH}"
+    build:
+      context: .
+      dockerfile: Dockerfile.storybook
+    expose:
+      - "80"
+    networks:
+      - proxy
+
 networks:
   proxy:
     external: true

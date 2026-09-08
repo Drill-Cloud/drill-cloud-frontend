@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Clock3, Gauge, LogOut, RefreshCw, Search, Settings, ShieldAlert } from 'lucide-react';
 import edgeImage from '../../assets/edge.png';
 import { getEdges } from '../../entities/edge/api';
+import { getEdgeDisplayName } from '../../entities/edge/model';
 import type { EdgeItem } from '../../entities/edge/types';
 import { useAuth } from '../../auth/authContext';
 
@@ -11,16 +12,12 @@ type EdgesDashboardProps = {
   onOpenSettings: () => void;
 };
 
-function getEdgeTitle(edge: EdgeItem): string {
-  return edge.name && edge.name !== edge.id ? edge.name : edge.id;
-}
-
 function filterEdges(edges: EdgeItem[], search: string): EdgeItem[] {
   const query = search.trim().toLowerCase();
   return query ? edges.filter((edge) => `${edge.id} ${edge.name}`.toLowerCase().includes(query)) : edges;
 }
 
-/** Отображает список буровых без расчетов по текущим значениям. */
+/** Отображает список установок без расчетов по текущим значениям. */
 export function EdgesDashboard({ onOpenEdge, onOpenSettings }: EdgesDashboardProps) {
   const [search, setSearch] = useState('');
   const auth = useAuth();
@@ -37,12 +34,12 @@ export function EdgesDashboard({ onOpenEdge, onOpenSettings }: EdgesDashboardPro
       <header className="dashboard-header">
         <div>
           <span className="page-kicker">Drill Cloud v3</span>
-          <h1>Буровые установки</h1>
+          <h1>Установки</h1>
         </div>
         <div className="dashboard-actions">
           <label className="search-box dashboard-search">
             <Search size={16} />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Поиск буровой" />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Поиск установки" />
           </label>
           <button type="button" className="icon-button" onClick={() => edges.refetch()} title="Обновить список">
             <RefreshCw size={18} />
@@ -60,15 +57,15 @@ export function EdgesDashboard({ onOpenEdge, onOpenSettings }: EdgesDashboardPro
         </div>
       </header>
 
-      <section className="dashboard-stats" aria-label="Статистика буровых">
+      <section className="dashboard-stats" aria-label="Статистика установок">
         <StatBlock label="Всего установок" value={edges.data?.items.length ?? 0} tone="neutral" />
         <StatBlock label="Найдено" value={filteredEdges.length} tone="accent" />
       </section>
 
       {edges.isError ? (
-        <div className="empty-panel">Не удалось загрузить список буровых: {String(edges.error)}</div>
+        <div className="empty-panel">Не удалось загрузить список установок: {String(edges.error)}</div>
       ) : (
-        <section className="edge-card-grid" aria-label="Буровые установки">
+        <section className="edge-card-grid" aria-label="Установки">
           {filteredEdges.map((edge) => (
             <EdgeCard
               key={edge.id}
@@ -80,7 +77,7 @@ export function EdgesDashboard({ onOpenEdge, onOpenSettings }: EdgesDashboardPro
       )}
 
       {!edges.isPending && !filteredEdges.length && !edges.isError ? (
-        <div className="empty-panel">В cloud-v3 пока нет буровых</div>
+        <div className="empty-panel">В cloud-v3 пока нет установок</div>
       ) : null}
     </main>
   );
@@ -110,7 +107,7 @@ function EdgeCard({
   edge: EdgeItem;
   onOpenEdge: (edgeId: string) => void;
 }) {
-  const title = getEdgeTitle(edge);
+  const title = getEdgeDisplayName(edge);
 
   return (
     <article className="edge-card" data-testid="edge-card" data-edge-id={edge.id}>

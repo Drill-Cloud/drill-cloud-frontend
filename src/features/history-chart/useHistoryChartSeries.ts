@@ -16,8 +16,8 @@ export function useHistoryChartSeries(
       lines.flatMap((line) =>
         line.rows.length
           ? [
-              ...createSeriesOptions(line.rows, line.index, line.label, granulate),
-              ...createAvgLineSeries(line.rows, line.index, line.label, granulate, showAvgLine, avgLineMode === 'auto'),
+              ...createSeriesOptions(line.rows, line.color, line.label, granulate),
+              ...createAvgLineSeries(line.rows, line.color, line.label, granulate, showAvgLine, avgLineMode === 'auto'),
             ]
           : [],
       ),

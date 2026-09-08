@@ -28,6 +28,7 @@ type HistoryChartProps = {
   tickIntervalMs?: number;
   to: string;
   tagLabels?: Record<string, string>;
+  tagColors: Record<string, string>;
   zoomRange?: HistoryZoomRange;
 };
 
@@ -59,6 +60,7 @@ export function HistoryChart({
   tickIntervalMs,
   to,
   tagLabels = {},
+  tagColors,
   zoomRange: controlledZoomRange,
 }: HistoryChartProps) {
   const baseRange = useMemo(
@@ -80,6 +82,7 @@ export function HistoryChart({
     tags,
     to: zoomRange.to,
     tagLabels,
+    tagColors,
   });
   const showAvgLine = shouldShowAvgLine(avgLineMode, zoomRange);
   const series = useHistoryChartSeries(lines, zoomRange.granulate, avgLineMode, showAvgLine);

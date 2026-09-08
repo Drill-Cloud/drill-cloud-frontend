@@ -1,7 +1,6 @@
 import type { LineSeriesOption, SeriesOption } from 'echarts';
 import type { HistoryPoint } from '../../entities/history/types';
 import { parseGranulateMs } from '../../utils/historyGranularity';
-import { SERIES_COLORS } from './historyChartSeries';
 
 type AvgLineSeriesValue = [time: number, avg: number, min: number, max: number, count: number, slotMs: number];
 type AvgLineSeriesPoint = AvgLineSeriesValue | null;
@@ -49,7 +48,7 @@ function createAvgLineData(points: HistoryPoint[], granulate: string, breakOnGap
 
 export function createAvgLineSeries(
   points: HistoryPoint[],
-  index: number,
+  color: string,
   label: string,
   granulate: string,
   showAvgLine: boolean,
@@ -58,8 +57,6 @@ export function createAvgLineSeries(
   if (!showAvgLine) {
     return [];
   }
-
-  const color = SERIES_COLORS[index % SERIES_COLORS.length];
 
   return [
     {

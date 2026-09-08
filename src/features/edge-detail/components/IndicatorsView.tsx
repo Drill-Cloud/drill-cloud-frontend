@@ -25,7 +25,6 @@ export function IndicatorsView({
   search,
   selectedTags,
   onSearchChange,
-  onToggleTag,
 }: IndicatorsViewProps) {
   return (
     <section className="tags-section">
@@ -60,36 +59,6 @@ export function IndicatorsView({
         <div className="empty-panel">Не удалось загрузить текущие значения: {String(error)}</div>
       ) : (
         <>
-          {/* displayMode === 'overview' ? (
-            <div className="metric-mosaic">
-              {itemStatuses.map(({ item, statusInfo }) => (
-                <button
-                  key={`${item.edge}:${item.tag}`}
-                  type="button"
-                  className={`metric-tile metric-tile--${statusInfo.status} ${selectedTags.includes(item.tag) ? 'metric-tile--selected' : ''}`}
-                  title={`${getTagLabel(item.tag)} (${item.tag}): ${formatNumber(item.value)} · ${statusInfo.label}`}
-                  onClick={() => onToggleTag(item.tag)}
-                >
-                  <span className="metric-tile__status" />
-                  <span className="metric-tile__tag">{getTagLabel(item.tag)}</span>
-                  <strong>{formatNumber(item.value)}</strong>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="metric-grid">
-              {itemStatuses.map(({ item, statusInfo }) => (
-                <MetricCard
-                  key={`${item.edge}:${item.tag}`}
-                  item={item}
-                  displayName={getTagLabel(item.tag)}
-                  statusInfo={statusInfo}
-                  selected={selectedTags.includes(item.tag)}
-                  onToggle={onToggleTag}
-                />
-              ))}
-            </div>
-          ) */}
           <MetricWidgetsContainer>
             {items.map((item) => (
               <MetricWidget key={item.tag} item={item} />

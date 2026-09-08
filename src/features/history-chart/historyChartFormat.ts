@@ -77,59 +77,6 @@ function formatTooltipDateTime(value: number): string {
   }).format(new Date(value));
 }
 
-/** Форматирует только время, когда конец интервала находится в тот же день. */
-function formatTooltipTime(value: number): string {
-  return new Intl.DateTimeFormat('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(value));
-}
-
-/** Проверяет, можно ли показать конец интервала без повторения даты. */
-function isSameDate(first: number, second: number): boolean {
-  const firstDate = new Date(first);
-  const secondDate = new Date(second);
-
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear()
-    && firstDate.getMonth() === secondDate.getMonth()
-    && firstDate.getDate() === secondDate.getDate()
-  );
-}
-
-/** Показывает bucket графика как интервал текущей грануляции, а не как одну точку времени. */
-function formatTooltipInterval(value: AvgPointValue): string {
-  const time = value[0];
-  const slotMs = value[5];
-
-  if (!slotMs) {
-    return formatTooltipDateTime(time);
-  }
-
-  const from = time - slotMs / 2;
-  const to = time + slotMs / 2;
-
-  if (isSameDate(from, to)) {
-    return `${formatTooltipDateTime(from)} — ${formatTooltipTime(to)}`;
-  }
-
-  return `${formatTooltipDateTime(from)} — ${formatTooltipDateTime(to)}`;
-}
-
-/** Форматирует значение tooltip: одно число для min=avg=max или среднее с диапазоном. */
-function formatTooltipValue(value: AvgPointValue): string {
-  const avg = formatChartValue(value[1]);
-  const min = formatChartValue(value[2]);
-  const max = formatChartValue(value[3]);
-
-  if (min === avg && avg === max) {
-    return avg;
-  }
-
-  return `сред. ${avg} (${min} .. ${max})`;
-}
-
 function isAvgPointValue(value: unknown): value is AvgPointValue {
   return Array.isArray(value) && value.length >= 5 && value.every((item) => typeof item === 'number');
 }

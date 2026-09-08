@@ -30,7 +30,7 @@ export function EdgeSidebar({ collapsed, edgePath, view, onNavigate, onToggleCol
       <nav className="nav-list" aria-label="Основная навигация">
         <button className="nav-item nav-item--button" type="button" onClick={() => onNavigate('/edges')}>
           <Menu size={18} />
-          <span className="nav-label">Буровые</span>
+          <span className="nav-label">Установки</span>
         </button>
         <button
           className={`nav-item nav-item--button ${view === 'overview' ? 'nav-item--active' : ''}`}

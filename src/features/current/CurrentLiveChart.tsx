@@ -3,10 +3,12 @@ import ReactEChartsCore from 'echarts-for-react/esm/core.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CurrentItem } from '../../entities/current/types';
 import { getHistoryBatch } from '../../entities/history/api';
+import { UNKNOWN_TAG_COLOR } from '../../entities/tag/color';
 import { formatNumber } from '../../utils/format';
 import { parseGranulateMs } from '../../utils/historyGranularity';
 import { echarts } from '../history-chart/historyChartEcharts';
 import { useUiSettings } from '../settings/model/settings.context';
+import { createCurrentTagColors } from './model';
 
 type LivePoint = [number, number];
 type LiveSeriesByTag = Record<string, LivePoint[]>;
@@ -28,8 +30,6 @@ type LiveTooltipPositionSize = {
   contentSize: [number, number];
   viewSize: [number, number];
 };
-
-const palette = ['#649dff', '#6ee7b7', '#facc15', '#fb7185', '#67e8f9', '#f97316', '#a78bfa', '#84cc16'];
 
 function isNumberValue(value: CurrentItem['value']): value is number {
   return typeof value === 'number' && Number.isFinite(value);
@@ -200,6 +200,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
   const initialLoadIdRef = useRef(0);
   const chartTagsKey = useMemo(() => JSON.stringify(getChartTags(items, selectedTags)), [items, selectedTags]);
   const chartTags = useMemo(() => JSON.parse(chartTagsKey) as string[], [chartTagsKey]);
+  const tagColors = useMemo(() => createCurrentTagColors(items), [items]);
   const showInitialLoader = initialHistoryLoading;
 
   // Время двигает видимое окно графика, даже если новые SSE-точки временно не приходят.
@@ -302,8 +303,8 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
   }, [items, chartTags, liveGranulateMs, liveSettings.maxPointsPerTag, liveWindowMs]);
 
   const option = useMemo<EChartsOption>(() => {
-    const series: SeriesOption[] = chartTags.map((tag, index) => {
-      const color = palette[index % palette.length];
+    const series: SeriesOption[] = chartTags.map((tag) => {
+      const color = tagColors[tag] ?? UNKNOWN_TAG_COLOR;
       const data = seriesByTag[tag] ?? [];
 
       return {
@@ -331,7 +332,6 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
     return {
       animation: false,
       backgroundColor: 'transparent',
-      color: palette,
       grid: {
         left: 52,
         right: 24,
@@ -382,7 +382,7 @@ export function CurrentLiveChart({ edgeId, getTagLabel, items, selectedTags }: C
       },
       series,
     };
-  }, [chartTags, getTagLabel, liveWindowMs, now, seriesByTag]);
+  }, [chartTags, getTagLabel, liveWindowMs, now, seriesByTag, tagColors]);
 
   if (chartTags.length === 0) {
     return (

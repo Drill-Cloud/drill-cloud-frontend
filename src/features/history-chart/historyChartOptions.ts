@@ -3,7 +3,6 @@ import type { SeriesOption } from 'echarts';
 import type { HistoryAxisLabelFormat } from '../../utils/historyGranularity';
 import type { DataZoomState } from './chartTypes';
 import { formatAxisDate, formatTooltip } from './historyChartFormat';
-import { SERIES_COLORS } from './historyChartSeries';
 
 export type HistoryChartOptionsInput = {
   dataZoomState: DataZoomState;
@@ -28,7 +27,6 @@ export function createHistoryChartOptions({
   const xMax = to ? new Date(to).getTime() : undefined;
 
   return {
-    color: SERIES_COLORS,
     animation: false,
     backgroundColor: 'transparent',
     textStyle: {

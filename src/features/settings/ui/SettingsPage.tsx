@@ -70,7 +70,7 @@ export function SettingsPage() {
         <div>
           <span className="page-kicker"><Settings size={14} /> Настройки</span>
           <h1>Глобальные настройки интерфейса</h1>
-          <p>Настройки привязаны к вашей учетной записи и применяются на всех буровых.</p>
+          <p>Настройки привязаны к вашей учетной записи и применяются на всех установках.</p>
         </div>
       </header>
 
@@ -112,7 +112,7 @@ export function SettingsPage() {
             <NumberField testId="settings-archive-period" label="Период архива" hint="Часов при открытии страницы" min={1} max={8760} value={draft.archiveChart.defaultPeriodHours} onChange={(value) => setDraft((current) => ({ ...current, archiveChart: { defaultPeriodHours: value } }))} />
             <label className="settings-toggle">
               <input data-testid="settings-sidebar-collapsed" type="checkbox" checked={draft.interface.sidebarCollapsed} onChange={(event) => setDraft((current) => ({ ...current, interface: { sidebarCollapsed: event.target.checked } }))} />
-              <span><strong>Сворачивать боковое меню</strong><small>Использовать компактное меню на страницах буровой</small></span>
+              <span><strong>Сворачивать боковое меню</strong><small>Использовать компактное меню на страницах установки</small></span>
             </label>
           </div>
         </section>

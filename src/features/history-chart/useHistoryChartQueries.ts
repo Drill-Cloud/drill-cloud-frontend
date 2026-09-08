@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { keepPreviousData, useQueries } from '@tanstack/react-query';
 import { getHistory } from '../../entities/history/api';
 import type { HistoryPoint } from '../../entities/history/types';
+import { UNKNOWN_TAG_COLOR } from '../../entities/tag/color';
 
 type UseHistoryChartQueriesParams = {
   edge: string;
@@ -10,10 +11,11 @@ type UseHistoryChartQueriesParams = {
   tags: string[];
   to: string;
   tagLabels: Record<string, string>;
+  tagColors: Record<string, string>;
 };
 
 export type HistoryChartLineData = {
-  index: number;
+  color: string;
   label: string;
   loading: boolean;
   rows: HistoryPoint[];
@@ -27,6 +29,7 @@ export function useHistoryChartQueries({
   tags,
   to,
   tagLabels,
+  tagColors,
 }: UseHistoryChartQueriesParams): HistoryChartLineData[] {
   const enabled = Boolean(edge && from && granulate && to);
 
@@ -42,12 +45,12 @@ export function useHistoryChartQueries({
   return useMemo(
     () =>
       tags.map((tag, index) => ({
-        index,
+        color: tagColors[tag] ?? UNKNOWN_TAG_COLOR,
         label: tagLabels[tag] ?? tag,
         loading: enabled && queries[index].isPending,
         rows: queries[index].data?.rows ?? [],
         tag,
       })),
-    [enabled, queries, tagLabels, tags],
+    [enabled, queries, tagColors, tagLabels, tags],
   );
 }

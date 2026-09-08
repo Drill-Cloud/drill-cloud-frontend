@@ -1,6 +1,7 @@
 services:
   drill-ui:
-    container_name: container-drill-ui${branch:+-${branch}}
+    # BRANCH разделяет контейнеры разных окружений на одном Docker-хосте.
+    container_name: "container-drill-ui-${BRANCH}"
     build:
       context: .
       args:
@@ -9,6 +10,17 @@ services:
         VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
         VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
         VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+    expose:
+      - "80"
+    networks:
+      - proxy
+
+  drill-storybook:
+    # Storybook публикуется отдельно от пользовательского интерфейса.
+    container_name: "container-drill-storybook-${BRANCH}"
+    build:
+      context: .
+      dockerfile: Dockerfile.storybook
     expose:
       - "80"
     networks:

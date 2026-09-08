@@ -14,6 +14,7 @@ type ArchiveViewProps = {
   items: CurrentItem[];
   range: DateRangeState;
   tagLabels: Record<string, string>;
+  tagColors: Record<string, string>;
   onRangeChange: (value: DateRangeState) => void;
 };
 
@@ -25,6 +26,7 @@ export function ArchiveView({
   items,
   range,
   tagLabels,
+  tagColors,
   onRangeChange,
 }: ArchiveViewProps) {
   const [avgLineMode, setAvgLineMode] = useState<AvgLineMode>('auto');
@@ -53,6 +55,7 @@ export function ArchiveView({
         items={items}
         range={range}
         tagLabels={tagLabels}
+        tagColors={tagColors}
         onAvgLineModeChange={setAvgLineMode}
         onRangeChange={onRangeChange}
       />

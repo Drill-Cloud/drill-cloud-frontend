@@ -8,6 +8,7 @@ export type TagItem = {
   unitOfMeasurement: string;
   edgeIds: string[];
   precision: number | null;
+  color: string;
 };
 
 export type TagResponse = {

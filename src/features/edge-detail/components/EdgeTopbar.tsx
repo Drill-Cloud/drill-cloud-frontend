@@ -3,7 +3,7 @@ import { LogOut, Menu, RefreshCw } from 'lucide-react';
 type EdgeTopbarProps = {
   authEnabled: boolean;
   currentEventsConnected: boolean;
-  edgeId: string;
+  edgeName: string;
   onBack: () => void;
   onLogout: () => void;
   onRefresh: () => void;
@@ -12,7 +12,7 @@ type EdgeTopbarProps = {
 export function EdgeTopbar({
   authEnabled,
   currentEventsConnected,
-  edgeId,
+  edgeName,
   onBack,
   onLogout,
   onRefresh,
@@ -21,7 +21,7 @@ export function EdgeTopbar({
     <header className="topbar">
       <div>
         <span className="page-kicker">Операторская панель</span>
-        <h1>Буровая установка {edgeId}</h1>
+        <h1>{edgeName}</h1>
         <span
           className={`current-transport current-transport--${currentEventsConnected ? 'sse' : 'polling'}`}
           data-testid="current-transport"

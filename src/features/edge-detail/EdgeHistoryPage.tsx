@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { getCurrent } from '../../entities/current/api';
 import { toIsoFromInput } from '../../utils/format';
 import { getHistoryGranularity } from '../../utils/historyGranularity';
-import { createCurrentTagLabels } from '../current/model';
+import { createCurrentTagColors, createCurrentTagLabels } from '../current/model';
 import { useCurrentEvents } from '../current/useCurrentEvents';
 import { createRange } from '../history/dateRange';
 import { ArchiveView } from './components/ArchiveView';
@@ -25,6 +25,7 @@ export function EdgeHistoryPage() {
   });
   const currentItems = useMemo(() => current.data?.items ?? [], [current.data?.items]);
   const tagLabels = useMemo(() => createCurrentTagLabels(currentItems), [currentItems]);
+  const tagColors = useMemo(() => createCurrentTagColors(currentItems), [currentItems]);
   const getTagLabel = (tag: string) => tagLabels[tag] ?? tag;
   const from = toIsoFromInput(range.from) as string;
   const to = toIsoFromInput(range.to) as string;
@@ -49,6 +50,7 @@ export function EdgeHistoryPage() {
         onRangeChange={setRange}
         getTagLabel={getTagLabel}
         tagLabels={tagLabels}
+        tagColors={tagColors}
       />
     </EdgePageLayout>
   );

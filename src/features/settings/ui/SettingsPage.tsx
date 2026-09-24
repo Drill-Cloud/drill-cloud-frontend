@@ -1,4 +1,4 @@
-import { ArrowLeft, RotateCcw, Save, Settings } from 'lucide-react';
+import { ArchiveRestore, ArrowLeft, ChartSpline, Film, RotateCcw, Save, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_UI_SETTINGS } from '../model/defaults';
@@ -78,8 +78,11 @@ export function SettingsPage() {
       {store.loading ? <div className="settings-message">Загрузка серверных настроек…</div> : null}
 
       <div className="settings-sections">
-        <section className="settings-card">
-          <header><h2>Видеоплеер</h2><p>Буферизация и очистка live-видео.</p></header>
+        <section className="settings-card settings-card--video">
+          <header>
+            <span className="settings-card__icon"><Film size={20} /></span>
+            <div><h2>Видеоплеер</h2><p>Буферизация и очистка live-видео.</p></div>
+          </header>
           <div className="settings-grid">
             <NumberField testId="settings-player-max-latency" label="Максимальное отставание" hint="Секунды до перехода ближе к live" min={1} max={120} step={0.5} value={draft.player.liveBufferLatencyMaxLatency} onChange={(value) => setDraft((current) => ({ ...current, player: { ...current.player, liveBufferLatencyMaxLatency: value } }))} />
             <NumberField testId="settings-player-min-remain" label="Остаток буфера" hint="Секунды после перехода к live" min={0.5} max={60} step={0.5} value={draft.player.liveBufferLatencyMinRemain} onChange={(value) => setDraft((current) => ({ ...current, player: { ...current.player, liveBufferLatencyMinRemain: value } }))} />
@@ -89,8 +92,11 @@ export function SettingsPage() {
           </div>
         </section>
 
-        <section className="settings-card">
-          <header><h2>Live-график</h2><p>Окно данных, частота обновления и детализация.</p></header>
+        <section className="settings-card settings-card--live">
+          <header>
+            <span className="settings-card__icon"><ChartSpline size={20} /></span>
+            <div><h2>Live-график</h2><p>Окно данных, частота обновления и детализация.</p></div>
+          </header>
           <div className="settings-grid">
             <NumberField testId="settings-live-window" label="Период окна" hint="Минут на экране" min={1} max={120} value={draft.liveChart.windowMinutes} onChange={(value) => setDraft((current) => ({ ...current, liveChart: { ...current.liveChart, windowMinutes: value } }))} />
             <NumberField testId="settings-live-shift" label="Сдвиг окна" hint="Интервал в миллисекундах" min={1000} max={60000} step={1000} value={draft.liveChart.shiftIntervalMs} onChange={(value) => setDraft((current) => ({ ...current, liveChart: { ...current.liveChart, shiftIntervalMs: value } }))} />
@@ -106,8 +112,11 @@ export function SettingsPage() {
           </div>
         </section>
 
-        <section className="settings-card">
-          <header><h2>Архив и интерфейс</h2><p>Начальный период архива и состояние меню.</p></header>
+        <section className="settings-card settings-card--archive">
+          <header>
+            <span className="settings-card__icon"><ArchiveRestore size={20} /></span>
+            <div><h2>Архив и интерфейс</h2><p>Начальный период архива и состояние меню.</p></div>
+          </header>
           <div className="settings-grid">
             <NumberField testId="settings-archive-period" label="Период архива" hint="Часов при открытии страницы" min={1} max={8760} value={draft.archiveChart.defaultPeriodHours} onChange={(value) => setDraft((current) => ({ ...current, archiveChart: { defaultPeriodHours: value } }))} />
             <label className="settings-toggle">

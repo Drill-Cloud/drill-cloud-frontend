@@ -3,20 +3,20 @@ import type { DetailView } from '../types';
 
 type EdgeSidebarProps = {
   collapsed: boolean;
+  edgeId: string;
+  edgeName: string;
   edgePath: string;
   view: DetailView;
   onNavigate: (path: string) => void;
   onToggleCollapsed: () => void;
 };
 
-export function EdgeSidebar({ collapsed, edgePath, view, onNavigate, onToggleCollapsed }: EdgeSidebarProps) {
+export function EdgeSidebar({ collapsed, edgeId, edgeName, edgePath, view, onNavigate, onToggleCollapsed }: EdgeSidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <img src="/logo.png" alt="" />
-        <div className="brand__text">
-          <strong>Drill UI</strong>
-        </div>
+        <span className="brand__mark"><img src="/logo.png" alt="" /></span>
+        <div className="brand__text"><strong>DRILL <b>CLOUD</b></strong></div>
         <button
           type="button"
           className="sidebar-toggle"
@@ -25,6 +25,12 @@ export function EdgeSidebar({ collapsed, edgePath, view, onNavigate, onToggleCol
         >
           {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
         </button>
+      </div>
+
+      <div className="sidebar-edge-context">
+        <span>ТЕКУЩАЯ УСТАНОВКА</span>
+        <strong>{edgeName}</strong>
+        <small>{edgeId}</small>
       </div>
 
       <nav className="nav-list" aria-label="Основная навигация">

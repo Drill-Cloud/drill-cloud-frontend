@@ -38,6 +38,8 @@ export function EdgePageLayout({
     <main className={`app-shell ${sidebarCollapsed ? 'app-shell--sidebar-collapsed' : ''}`}>
       <EdgeSidebar
         collapsed={sidebarCollapsed}
+        edgeId={edgeId}
+        edgeName={edgeName}
         edgePath={edgePath}
         view={view}
         onNavigate={navigate}

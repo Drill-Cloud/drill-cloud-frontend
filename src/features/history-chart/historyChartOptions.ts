@@ -30,7 +30,7 @@ export function createHistoryChartOptions({
     animation: false,
     backgroundColor: 'transparent',
     textStyle: {
-      color: '#cbd5e1',
+      color: '#ded1c7',
       fontFamily: 'Inter, Segoe UI, sans-serif',
     },
     tooltip: {
@@ -40,14 +40,14 @@ export function createHistoryChartOptions({
         // Видимую вертикаль рисуем своим overlay во всех графиках набора.
         // Нативную линию ECharts прячем, чтобы на активном графике не было дубля.
         lineStyle: {
-          color: 'rgba(226, 232, 240, 0)',
+          color: 'rgba(226, 199, 178, 0)',
           type: 'dashed',
           width: 0,
         },
       },
-      backgroundColor: 'rgba(10, 13, 18, 0.96)',
+      backgroundColor: 'rgba(12, 8, 6, 0.97)',
       borderColor: 'rgba(212, 165, 116, 0.32)',
-      textStyle: { color: '#f8fafc' },
+      textStyle: { color: '#f7efe8' },
       formatter: formatTooltip,
     },
     legend: {
@@ -57,7 +57,7 @@ export function createHistoryChartOptions({
       itemWidth: 18,
       itemHeight: 3,
       data: legendData,
-      textStyle: { color: '#cbd5e1' },
+      textStyle: { color: '#ded1c7' },
     },
     grid: {
       top: 54,
@@ -71,9 +71,9 @@ export function createHistoryChartOptions({
       max: Number.isFinite(xMax) ? xMax : undefined,
       minInterval: tickIntervalMs,
       maxInterval: tickIntervalMs,
-      axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.35)' } },
+      axisLine: { lineStyle: { color: 'rgba(176, 126, 91, 0.35)' } },
       axisLabel: {
-        color: '#94a3b8',
+        color: '#b9a493',
         formatter: (value: number) => formatAxisDate(value, labelFormat),
       },
       splitLine: { show: false },
@@ -81,9 +81,9 @@ export function createHistoryChartOptions({
     yAxis: {
       type: 'value',
       scale: true,
-      axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.35)' } },
-      axisLabel: { color: '#94a3b8' },
-      splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.1)' } },
+      axisLine: { lineStyle: { color: 'rgba(176, 126, 91, 0.35)' } },
+      axisLabel: { color: '#b9a493' },
+      splitLine: { lineStyle: { color: 'rgba(176, 126, 91, 0.1)' } },
     },
     dataZoom: [
       {
@@ -104,13 +104,13 @@ export function createHistoryChartOptions({
         xAxisIndex: 0,
         bottom: 18,
         height: 28,
-        borderColor: 'rgba(148, 163, 184, 0.24)',
-        fillerColor: 'rgba(91, 143, 249, 0.18)',
+        borderColor: 'rgba(176, 126, 91, 0.26)',
+        fillerColor: 'rgba(185, 104, 62, 0.2)',
         handleStyle: {
           color: '#d4a574',
           borderColor: '#e8c9a0',
         },
-        textStyle: { color: '#94a3b8' },
+        textStyle: { color: '#b9a493' },
         start: dataZoomState.start,
         end: dataZoomState.end,
         startValue: dataZoomState.startValue,
@@ -132,13 +132,13 @@ export function createHistoryChartOptions({
         filterMode: 'none',
         right: 8,
         width: 12,
-        borderColor: 'rgba(148, 163, 184, 0.24)',
-        fillerColor: 'rgba(91, 143, 249, 0.18)',
+        borderColor: 'rgba(176, 126, 91, 0.26)',
+        fillerColor: 'rgba(185, 104, 62, 0.2)',
         handleStyle: {
           color: '#d4a574',
           borderColor: '#e8c9a0',
         },
-        textStyle: { color: '#94a3b8' },
+        textStyle: { color: '#b9a493' },
       },
     ],
     series,

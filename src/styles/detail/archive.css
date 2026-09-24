@@ -633,3 +633,56 @@
     min-width: 0;
   }
 }
+
+/* Archive keeps its original chart behaviour; these overrides only align the shell with the product palette. */
+.chart-section--archive .history-tag-picker__control,
+.chart-section--archive .archive-tag-panel__toggle,
+.chart-section--archive .history-tag-picker__dropdown,
+.chart-section--archive .tag-selector,
+.chart-section--archive .history-chart-panel__remove {
+  border-color: rgba(137, 91, 60, 0.44);
+  background: rgba(11, 7, 5, 0.62);
+}
+
+.chart-section--archive .history-tag-picker__control:hover,
+.chart-section--archive .history-tag-picker__control:focus-within,
+.chart-section--archive .archive-date-field:hover,
+.chart-section--archive .archive-date-field:focus-within {
+  border-color: var(--line-strong);
+  background: rgba(35, 20, 12, 0.72);
+}
+
+.chart-section--archive .history-tag-picker__label,
+.chart-section--archive .archive-tag-panel__toggle,
+.chart-section--archive .tag-select-item,
+.chart-section--archive .tag-select-item strong {
+  color: #e9ddd4;
+}
+
+.chart-section--archive .history-tag-picker__chip {
+  color: var(--text);
+}
+
+.chart-section--archive .history-tag-picker__chip button,
+.chart-section--archive .tag-selector__tools button,
+.chart-section--archive .archive-date-field {
+  border-color: rgba(137, 91, 60, 0.42);
+  background: rgba(15, 9, 6, 0.72);
+  color: #e9ddd4;
+}
+
+.chart-section--archive .tag-select-item {
+  border-color: rgba(137, 91, 60, 0.34);
+  background: rgba(11, 7, 5, 0.5);
+}
+
+.chart-section--archive .tag-select-item--selected {
+  border-color: rgba(226, 161, 109, 0.66);
+  background:
+    linear-gradient(135deg, rgba(185, 104, 62, 0.2), rgba(212, 165, 116, 0.06)),
+    rgba(20, 12, 8, 0.82);
+}
+
+.chart-section--archive .archive-date-input {
+  color: var(--text);
+}
